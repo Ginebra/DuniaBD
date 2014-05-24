@@ -16,13 +16,36 @@ import javax.swing.JOptionPane;
 
 public class Persona extends javax.swing.JInternalFrame {
 
-    public PopupImprovisado pop = new PopupImprovisado();
+    //public PopupImprovisado pop = new PopupImprovisado();
     public String identificador;
+    public int flag = 0;
+    Conexiones con = new Conexiones();
+    Connection conect;
     
     public Persona() {
         initComponents();
         inhabilitar();
         btnActualizar.setVisible(false);
+        conect = con.conecta2();
+    }
+    
+    void limpiar(){
+        nombrePersona.setText("");
+        estadoPersona.setText("");
+        coloniaPersona.setText("");
+        paternoPersona.setText("");
+        ciudadPersona.setText("");
+        numeroPersona.setText("");
+        postalPersona.setText("");
+        maternoPersona.setText("");
+        callePersona.setText("");
+        externaPersona.setText("");
+        interiorPersona.setText("");
+        dominioPersona.setText("");
+        localizacionPersona.setText("");
+        regimenPersona.setText("");
+        rsocialPersona.setText("");
+        rfcPersona.setText("");
     }
     
     void inhabilitar(){
@@ -84,10 +107,36 @@ public class Persona extends javax.swing.JInternalFrame {
     }
        
    
-    public void insertar(){
+    public void insertar() throws SQLException{
         
         String SQL;
-        Conexiones con = new Conexiones();
+        
+        String Query,s;
+        
+        Query = "SELECT ID_PERSONA FROM PERSONA";
+        s = "ID_PERSONA";
+        int idpersona = con.Aleatorio(Query, s);
+        System.out.println("El id de persona : "+idpersona);
+        
+        Query = "SELECT ID_TELEFONO FROM TELEFONO";
+        s = "ID_TELEFONO";
+        int idtelefono = con.Aleatorio(Query, s);
+        System.out.println("El id de telefono : "+idtelefono);
+        
+        Query = "SELECT ID_PAGINA FROM PAGINA_WEB";
+        s = "ID_PAGINA";
+        int idpagina = con.Aleatorio(Query, s);
+        System.out.println("El id de persona : "+idpagina);
+        
+        Query = "SELECT ID_LOGOTIPO FROM LOGOTIPO";
+        s = "ID_LOGOTIPO";
+        int idlogotipo = con.Aleatorio(Query, s);
+        System.out.println("El id de LOGOTIPO : "+idlogotipo);
+        
+        Query = "SELECT ID_DOMICILIO FROM DOMICILIO";
+        s = "ID_DOMICILIO";
+        int iddomicilio = con.Aleatorio(Query, s);
+        System.out.println("El id de domicilio : "+iddomicilio);
         
         ////Llenar PERSONA
         int tipopersona = (tipoPersona.getSelectedItem() == "moral") ? 1 : 0;
@@ -98,13 +147,13 @@ public class Persona extends javax.swing.JInternalFrame {
                 + "'"+rsocialPersona.getText()+"',"
                 + "'"+rfcPersona.getText()+"',"
                 + "'"+regimenPersona.getText()+"',"
-                + ""+idPersona.getText()+","
+                + ""+idpersona+","
                 + ""+tipopersona+")";
         con.Insertar(SQL);
         
         ////Llenar DOMICILIO
         SQL = "INSERT DOMICILIO VALUES "
-                + "("+idPersona.getText()+","
+                + "("+iddomicilio+","
                 + "'"+ciudadPersona.getText()+"',"
                 + "'"+coloniaPersona.getText()+"',"
                 + "'"+callePersona.getText()+"',"
@@ -116,43 +165,72 @@ public class Persona extends javax.swing.JInternalFrame {
         
         //Llenar TELEFONO
         SQL = "INSERT TELEFONO VALUES "
-                + "("+idPersona.getText()+","
+                + "("+idtelefono+","
                 + ""+numeroPersona.getText()+","
                 + "'"+descripcionPersona.getSelectedItem()+"')";       
         con.Insertar(SQL);
         
         //Llenar Pagina WEB
         SQL = "INSERT PAGINA_WEB VALUES "
-                + "("+idPersona.getText()+","
+                + "("+idpagina+","
                 + "'"+dominioPersona.getText()+"')";
         con.Insertar(SQL);
         
         //Llenar Logotipo
         SQL = "INSERT LOGOTIPO VALUES "
-                + "("+idPersona.getText()+","
+                + "("+idlogotipo+","
                 + "'"+localizacionPersona.getText()+"')";
         con.Insertar(SQL);
         
+        ////Llenar PERSONA_LOGOTIPO
+        SQL = "INSERT PERSONA_LOGOTIPO VALUES "
+                + "("+idlogotipo+","
+                + ""+idpersona+")";
+        con.Insertar(SQL);
         
-        inhabilitar();
+        ////Llenar PERSONA_PAGINA
+        SQL = "INSERT PERSONA_PAGINA VALUES "
+                + "("+idpagina+","
+                + ""+idpersona+")";
+        con.Insertar(SQL);
+        
+        ////Llenar PERSONA_TELEFONO
+        SQL = "INSERT PERSONA_TELEFONO VALUES "
+                + "("+idtelefono+","
+                + ""+idpersona+")";
+        con.Insertar(SQL);
+        
+        ////Llenar PERSONA_DOMICILIO
+        SQL = "INSERT PERSONA_DOMICILIO VALUES "
+                + "("+idpersona+","
+                + ""+iddomicilio+")";
+        con.Insertar(SQL);
+        
+        limpiar();
     }
     
     public void buscar () throws SQLException{
         Conexiones c = new Conexiones();
         Connection conect;
-        conect = c.conectar2();
+        conect = c.conecta2();
         int id = Integer.parseInt( JOptionPane.showInputDialog(
         null,"Introduzca el ID a buscar",
         "BUSCADOR",
         JOptionPane.QUESTION_MESSAGE) );
         
+        //////////////////////////////////////////
+        flag = 1;
+        btnActualizar.setVisible(true);
+        btnActualizar.setText("MODIFICAR");
+        habilitar();
+        //////////////////////////////////////////
+        
         try{
-        Statement estado = conect.createStatement();
         ResultSet resultado;
         String SQL;
         
             SQL = "SELECT * FROM persona WHERE ID_PERSONA = ";
-            resultado = c.ConsultarPersona(id,SQL);
+            resultado = c.Consultar(id,SQL);
             
             while (resultado.next()) {
                 nombrePersona.setText(resultado.getString("NOMBRE") );
@@ -162,22 +240,22 @@ public class Persona extends javax.swing.JInternalFrame {
                 rfcPersona.setText(resultado.getString("RFC"));
                 regimenPersona.setText(resultado.getString("REGIMEN_FISCAL"));
                 idPersona.setText(resultado.getString("ID_PERSONA"));
-                //tipoPersona.?????
+                tipoPersona.setSelectedItem(resultado.getString("TIPO_PERSONA"));
             }
             
             ///////////////TELEFONO///////////
             
             SQL = "SELECT * FROM TELEFONO WHERE ID_TELEFONO = ";
-            resultado = c.ConsultarPersona(id,SQL);
+            resultado = c.Consultar(id,SQL);
             
             while (resultado.next()) {
                 numeroPersona.setText(resultado.getString("NUMERO") );
-                //descripcionPersona.????
+                descripcionPersona.setSelectedItem(resultado.getString("DESCRIPCION"));
             }
             
             ///////////PAGINA WEB//////////////
             SQL = "SELECT * FROM PAGINA_WEB WHERE ID_PAGINA = ";
-            resultado = c.ConsultarPersona(id,SQL);
+            resultado = c.Consultar(id,SQL);
             
             while (resultado.next()) {
                 dominioPersona.setText(resultado.getString("DOMINIO") );
@@ -186,7 +264,7 @@ public class Persona extends javax.swing.JInternalFrame {
             
             ///////////LOGOTIPO//////////////
             SQL = "SELECT * FROM LOGOTIPO WHERE ID_LOGOTIPO = ";
-            resultado = c.ConsultarPersona(id,SQL);
+            resultado = c.Consultar(id,SQL);
             
             while (resultado.next()) {
                 localizacionPersona.setText(resultado.getString("LOCALIZACION") );
@@ -195,7 +273,7 @@ public class Persona extends javax.swing.JInternalFrame {
             
             ///////////DOMICILIO//////////////
             SQL = "SELECT * FROM DOMICILIO WHERE ID_DOMICILIO = ";
-            resultado = c.ConsultarPersona(id,SQL);
+            resultado = c.Consultar(id,SQL);
             
             while (resultado.next()) {
                 ciudadPersona.setText(resultado.getString("CIUDAD"));
@@ -205,18 +283,126 @@ public class Persona extends javax.swing.JInternalFrame {
                 interiorPersona.setText(resultado.getString("NUMERO_INT"));
                 postalPersona.setText(resultado.getString("CP"));
                 estadoPersona.setText(resultado.getString("ESTADO"));
-                //descripcionPersona.????
-            }
-            
-            
+            }  
         resultado.close();
-        estado.close();
         }
         catch (SQLException e) {
             System.out.println("Error en Consultar");
+            JOptionPane.showMessageDialog(null, "No hay datos");
         }
         
     }
+    
+    public void modificar (){
+        Conexiones mod = new Conexiones();
+        int tipo = (tipoPersona.getSelectedItem() == "moral") ? 1 : 0;
+        
+        try{
+        String SQL;
+        
+            ///////////////PERSONA///////////   
+            SQL = "UPDATE PERSONA set "
+                    + "NOMBRE = '"+nombrePersona.getText()+"', "
+                    + "APELLIDO_MATERNO = '"+maternoPersona.getText()+"', "
+                    + "APELLIDO_PATERNO = '"+paternoPersona.getText()+"',"
+                    + "RAZON_SOCIAL = '"+rsocialPersona.getText()+"', "
+                    + "RFC = '"+rfcPersona.getText()+"', "
+                    + "REGIMEN_FISCAL = '"+regimenPersona.getText()+"', "
+                    + "TIPO_PERSONA = "+tipo+" "
+                    + "where ID_PERSONA = "+idPersona.getText()+"";
+            mod.Modifica(SQL);
+            
+             
+            ///////////////TELEFONO///////////
+            SQL = "UPDATE TELEFONO SET "
+                    + "NUMERO = "+numeroPersona.getText()+", "
+                    + "DESCRIPCION = '"+descripcionPersona.getSelectedItem()+"' "
+                    + "WHERE ID_TELEFONO = "+idPersona.getText()+"";
+            mod.Modifica(SQL);
+            
+            
+            ///////////PAGINA WEB//////////////
+            SQL = "UPDATE PAGINA_WEB SET "
+                    + "DOMINIO = '"+dominioPersona.getText()+"' "
+                    + "WHERE ID_PAGINA = "+idPersona.getText()+"";
+            mod.Modifica(SQL);
+            
+           /*
+            ///////////LOGOTIPO//////////////
+            SQL = "UPDATE LOGOTIPO SET "
+                    + "LOCALIZACION = '"+localizacionPersona.getText()+"' "
+                    + "WHERE ID_LOGOTIPO = ";
+            mod.Modifica(SQL);
+           */
+            
+            ///////////DOMICILIO//////////////
+            SQL = "UPDATE DOMICILIO SET "
+                    + "CIUDAD = '"+ciudadPersona.getText()+"', "
+                    + "COLONIA = '"+coloniaPersona.getText()+"', "
+                    + "CALLE = '"+callePersona.getText()+"', "
+                    + "NUMERO_EXT = "+externaPersona.getText()+", "
+                    + "NUMERO_INT = "+interiorPersona.getText()+", "
+                    + "CP = "+postalPersona.getText()+", "
+                    + "ESTADO = '"+estadoPersona.getText()+"' "
+                    + "WHERE ID_DOMICILIO = "+idPersona.getText()+"";
+            mod.Modifica(SQL);
+            
+        }
+        catch (SQLException e) {
+            System.out.println("Error en Consultar");
+            JOptionPane.showMessageDialog(null, "No hay datos");
+        }
+    }
+    
+    
+    public void eliminar(){
+        Conexiones con = new Conexiones();
+        
+        int id = Integer.parseInt( JOptionPane.showInputDialog(
+        null,"Introduzca el ID a eliminar",
+        "BUSCADOR",
+        JOptionPane.QUESTION_MESSAGE));
+        
+        String SQL;
+        SQL = "DELETE FROM PERSONA WHERE ID_PERSONA =";
+        con.Eliminar(id,SQL);
+        SQL = "DELETE FROM TELEFONO WHERE ID_TELEFONO = ";
+        con.Eliminar(id,SQL);
+        SQL = "DELETE FROM PAGINA_WEB WHERE ID_PAGINA = ";
+        con.Eliminar(id,SQL);
+        SQL = "DELETE FROM LOGOTIPO WHERE ID_LOGOTIPO = ";
+        con.Eliminar(id,SQL);
+        SQL = "DELETE FROM DOMICILIO WHERE ID_DOMICILIO = ";
+        con.Eliminar(id,SQL);   
+        
+        JOptionPane.showMessageDialog(null, "Eliminacion Exitosa");
+    }
+    
+    void rndNumero() throws SQLException{
+        String Query,s;
+        
+        Query = "SELECT ID_PERSONA FROM PERSONA";
+        s = "ID_PERSONA";
+        
+        System.out.println("El id de persona : "+con.Aleatorio(Query, s));
+        
+        Query = "SELECT ID_TELEFONO FROM TELEFONO";
+        s = "ID_TELEFONO";
+        System.out.println("El id de telefono : "+con.Aleatorio(Query, s));
+        
+        Query = "SELECT ID_PAGINA FROM PAGINA_WEB";
+        s = "ID_PAGINA";
+        System.out.println("El id de persona : "+con.Aleatorio(Query, s));
+        
+        Query = "SELECT ID_LOGOTIPO FROM LOGOTIPO";
+        s = "ID_LOGOTIPO";
+        System.out.println("El id de LOGOTIPO : "+con.Aleatorio(Query, s));
+        
+        Query = "SELECT ID_DOMICILIO FROM DOMICILIO";
+        s = "ID_DOMICILIO";
+        System.out.println("El id de domicilio : "+con.Aleatorio(Query, s));
+        
+       }
     
    
     @SuppressWarnings("unchecked")
@@ -247,17 +433,6 @@ public class Persona extends javax.swing.JInternalFrame {
         jLabel17 = new javax.swing.JLabel();
         jLabel18 = new javax.swing.JLabel();
         callePersona = new javax.swing.JTextField();
-        jButton4 = new javax.swing.JButton();
-        jButton5 = new javax.swing.JButton();
-        jButton6 = new javax.swing.JButton();
-        jButton7 = new javax.swing.JButton();
-        jButton8 = new javax.swing.JButton();
-        jButton9 = new javax.swing.JButton();
-        jButton10 = new javax.swing.JButton();
-        jButton11 = new javax.swing.JButton();
-        jButton12 = new javax.swing.JButton();
-        jButton13 = new javax.swing.JButton();
-        jButton14 = new javax.swing.JButton();
         tipoPersona = new javax.swing.JComboBox();
         jLabel23 = new javax.swing.JLabel();
         idPersona = new javax.swing.JTextField();
@@ -271,10 +446,6 @@ public class Persona extends javax.swing.JInternalFrame {
         dominioPersona = new javax.swing.JTextField();
         localizacionPersona = new javax.swing.JTextField();
         descripcionPersona = new javax.swing.JComboBox();
-        jButton15 = new javax.swing.JButton();
-        jButton16 = new javax.swing.JButton();
-        jButton17 = new javax.swing.JButton();
-        jButton18 = new javax.swing.JButton();
         jLabel9 = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         jLabel4 = new javax.swing.JLabel();
@@ -283,15 +454,13 @@ public class Persona extends javax.swing.JInternalFrame {
         regimenPersona = new javax.swing.JTextField();
         rsocialPersona = new javax.swing.JTextField();
         rfcPersona = new javax.swing.JTextField();
-        jButton19 = new javax.swing.JButton();
-        jButton20 = new javax.swing.JButton();
-        jButton21 = new javax.swing.JButton();
         btnActualizar = new javax.swing.JButton();
         jLabel21 = new javax.swing.JLabel();
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
         jButton3 = new javax.swing.JButton();
         jSeparator1 = new javax.swing.JSeparator();
+        jButton4 = new javax.swing.JButton();
 
         jLabel22.setText("jLabel22");
 
@@ -321,33 +490,6 @@ public class Persona extends javax.swing.JInternalFrame {
 
         jLabel18.setText("NUMERO INT");
 
-        jButton4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/miPaquete/icon_edit.png"))); // NOI18N
-        jButton4.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton4ActionPerformed(evt);
-            }
-        });
-
-        jButton5.setIcon(new javax.swing.ImageIcon(getClass().getResource("/miPaquete/icon_edit.png"))); // NOI18N
-
-        jButton6.setIcon(new javax.swing.ImageIcon(getClass().getResource("/miPaquete/icon_edit.png"))); // NOI18N
-
-        jButton7.setIcon(new javax.swing.ImageIcon(getClass().getResource("/miPaquete/icon_edit.png"))); // NOI18N
-
-        jButton8.setIcon(new javax.swing.ImageIcon(getClass().getResource("/miPaquete/icon_edit.png"))); // NOI18N
-
-        jButton9.setIcon(new javax.swing.ImageIcon(getClass().getResource("/miPaquete/icon_edit.png"))); // NOI18N
-
-        jButton10.setIcon(new javax.swing.ImageIcon(getClass().getResource("/miPaquete/icon_edit.png"))); // NOI18N
-
-        jButton11.setIcon(new javax.swing.ImageIcon(getClass().getResource("/miPaquete/icon_edit.png"))); // NOI18N
-
-        jButton12.setIcon(new javax.swing.ImageIcon(getClass().getResource("/miPaquete/icon_edit.png"))); // NOI18N
-
-        jButton13.setIcon(new javax.swing.ImageIcon(getClass().getResource("/miPaquete/icon_edit.png"))); // NOI18N
-
-        jButton14.setIcon(new javax.swing.ImageIcon(getClass().getResource("/miPaquete/icon_edit.png"))); // NOI18N
-
         tipoPersona.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "moral", "fisica" }));
 
         jLabel23.setText("ID_PERSONA");
@@ -368,16 +510,7 @@ public class Persona extends javax.swing.JInternalFrame {
                             .addComponent(estadoPersona)
                             .addComponent(coloniaPersona, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(nombrePersona, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addGap(1, 1, 1)
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                    .addComponent(jButton5, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                                    .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 21, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jButton6, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(14, 14, 14)
+                        .addGap(36, 36, 36)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(jLabel15, javax.swing.GroupLayout.Alignment.TRAILING)
@@ -394,13 +527,7 @@ public class Persona extends javax.swing.JInternalFrame {
                     .addComponent(paternoPersona, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 166, Short.MAX_VALUE)
                     .addComponent(ciudadPersona, javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(interiorPersona, javax.swing.GroupLayout.Alignment.LEADING))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jButton7, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton8, javax.swing.GroupLayout.PREFERRED_SIZE, 21, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton9, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton10, javax.swing.GroupLayout.PREFERRED_SIZE, 21, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 29, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel17, javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jLabel3, javax.swing.GroupLayout.Alignment.TRAILING)
@@ -408,17 +535,11 @@ public class Persona extends javax.swing.JInternalFrame {
                     .addComponent(jLabel7, javax.swing.GroupLayout.Alignment.TRAILING))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addComponent(externaPersona, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE)
+                    .addComponent(externaPersona, javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(callePersona, javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(maternoPersona, javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(tipoPersona, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jButton11, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton12, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton13, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton14, javax.swing.GroupLayout.PREFERRED_SIZE, 21, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
+                    .addComponent(tipoPersona, 0, 170, Short.MAX_VALUE))
+                .addGap(39, 39, 39))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -426,68 +547,49 @@ public class Persona extends javax.swing.JInternalFrame {
                 .addGap(23, 23, 23)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                .addComponent(jLabel3)
-                                .addComponent(jLabel2)
-                                .addComponent(paternoPersona, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(maternoPersona, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(jButton7, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jButton11, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel3)
+                            .addComponent(jLabel2)
+                            .addComponent(paternoPersona, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(maternoPersona, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(14, 14, 14)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(jLabel15)
-                                    .addComponent(ciudadPersona, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(jLabel17)
-                                    .addComponent(callePersona, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(jButton12, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                        .addComponent(jLabel18)
-                                        .addComponent(jLabel19)
-                                        .addComponent(interiorPersona, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(externaPersona, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addComponent(jButton13, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(jButton8, javax.swing.GroupLayout.PREFERRED_SIZE, 14, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(jButton9))))
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel15)
+                            .addComponent(ciudadPersona, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel17)
+                            .addComponent(callePersona, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 14, Short.MAX_VALUE)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel18)
+                            .addComponent(jLabel19)
+                            .addComponent(interiorPersona, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(externaPersona, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                .addComponent(jLabel1)
-                                .addComponent(nombrePersona, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(jButton4, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel1)
+                            .addComponent(nombrePersona, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(14, 14, 14)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                .addComponent(jLabel14)
-                                .addComponent(estadoPersona, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(jButton5, javax.swing.GroupLayout.PREFERRED_SIZE, 17, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel14)
+                            .addComponent(estadoPersona, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED, 14, Short.MAX_VALUE)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                .addComponent(jLabel16)
-                                .addComponent(coloniaPersona, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(jButton6, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel16)
+                            .addComponent(coloniaPersona, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                        .addComponent(jButton10)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jButton14)
-                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                .addComponent(jLabel20)
-                                .addComponent(jLabel7)
-                                .addComponent(postalPersona, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(tipoPersona, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jLabel23)
-                        .addComponent(idPersona, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap())
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel20)
+                            .addComponent(jLabel7)
+                            .addComponent(postalPersona, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(tipoPersona, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(14, 14, 14))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel23)
+                            .addComponent(idPersona, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addContainerGap())))
         );
 
         jLabel8.setText("DATOS GENERALES");
@@ -506,14 +608,6 @@ public class Persona extends javax.swing.JInternalFrame {
 
         descripcionPersona.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "casa", "oficina", "fax", "celular" }));
 
-        jButton15.setIcon(new javax.swing.ImageIcon(getClass().getResource("/miPaquete/icon_edit.png"))); // NOI18N
-
-        jButton16.setIcon(new javax.swing.ImageIcon(getClass().getResource("/miPaquete/icon_edit.png"))); // NOI18N
-
-        jButton17.setIcon(new javax.swing.ImageIcon(getClass().getResource("/miPaquete/icon_edit.png"))); // NOI18N
-
-        jButton18.setIcon(new javax.swing.ImageIcon(getClass().getResource("/miPaquete/icon_edit.png"))); // NOI18N
-
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -524,56 +618,40 @@ public class Persona extends javax.swing.JInternalFrame {
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addComponent(jLabel11)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(numeroPersona, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton15, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(numeroPersona, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addComponent(jLabel12)
                         .addGap(27, 27, 27)
-                        .addComponent(descripcionPersona, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton16, javax.swing.GroupLayout.PREFERRED_SIZE, 17, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(descripcionPersona, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addComponent(jLabel13)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(dominioPersona, javax.swing.GroupLayout.PREFERRED_SIZE, 172, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton17, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(dominioPersona, javax.swing.GroupLayout.PREFERRED_SIZE, 172, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addComponent(jLabel10)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(localizacionPersona, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton18, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(20, Short.MAX_VALUE))
+                        .addComponent(localizacionPersona, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(51, Short.MAX_VALUE))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jLabel11)
-                        .addComponent(numeroPersona, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jButton15, javax.swing.GroupLayout.PREFERRED_SIZE, 15, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel11)
+                    .addComponent(numeroPersona, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jLabel12)
-                        .addComponent(descripcionPersona, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jButton16, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel12)
+                    .addComponent(descripcionPersona, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jLabel13)
-                        .addComponent(dominioPersona, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jButton17, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel13)
+                    .addComponent(dominioPersona, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jButton18, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jLabel10, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(localizacionPersona, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel10, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(localizacionPersona, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
 
@@ -586,12 +664,6 @@ public class Persona extends javax.swing.JInternalFrame {
         jLabel5.setText("RFC");
 
         jLabel6.setText("REGIMEN FISCAL");
-
-        jButton19.setIcon(new javax.swing.ImageIcon(getClass().getResource("/miPaquete/icon_edit.png"))); // NOI18N
-
-        jButton20.setIcon(new javax.swing.ImageIcon(getClass().getResource("/miPaquete/icon_edit.png"))); // NOI18N
-
-        jButton21.setIcon(new javax.swing.ImageIcon(getClass().getResource("/miPaquete/icon_edit.png"))); // NOI18N
 
         btnActualizar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/miPaquete/percent-icon.png"))); // NOI18N
         btnActualizar.setText("ACTUALIZAR");
@@ -616,13 +688,7 @@ public class Persona extends javax.swing.JInternalFrame {
                     .addComponent(rsocialPersona, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 215, Short.MAX_VALUE)
                     .addComponent(regimenPersona, javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(rfcPersona))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jButton19, javax.swing.GroupLayout.PREFERRED_SIZE, 21, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                        .addComponent(jButton20, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                        .addComponent(jButton21, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(18, 18, 18)
+                .addGap(49, 49, 49)
                 .addComponent(btnActualizar)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -633,24 +699,18 @@ public class Persona extends javax.swing.JInternalFrame {
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(btnActualizar)
                     .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(jPanel3Layout.createSequentialGroup()
-                                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(jLabel6)
-                                    .addComponent(regimenPersona, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(jButton19, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(jLabel4)
-                                    .addComponent(rsocialPersona, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                            .addComponent(jButton20, javax.swing.GroupLayout.PREFERRED_SIZE, 15, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel6)
+                            .addComponent(regimenPersona, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel4)
+                            .addComponent(rsocialPersona, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(14, 14, 14)
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                .addComponent(jLabel5)
-                                .addComponent(rfcPersona, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(jButton21, javax.swing.GroupLayout.PREFERRED_SIZE, 15, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap(63, Short.MAX_VALUE))
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel5)
+                            .addComponent(rfcPersona, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         jLabel21.setText("DATOS FISCALES");
@@ -679,6 +739,13 @@ public class Persona extends javax.swing.JInternalFrame {
             }
         });
 
+        jButton4.setText("jButton4");
+        jButton4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton4ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -693,29 +760,34 @@ public class Persona extends javax.swing.JInternalFrame {
                             .addGroup(layout.createSequentialGroup()
                                 .addContainerGap()
                                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(52, 52, 52)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel21)
-                            .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(52, 52, 52)
+                                .addComponent(jLabel21))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(29, 29, 29)
+                                .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(jLabel8)))
-                .addContainerGap())
+                .addGap(33, 33, 33))
             .addGroup(layout.createSequentialGroup()
                 .addGap(34, 34, 34)
                 .addComponent(jButton1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 208, Short.MAX_VALUE)
                 .addComponent(jButton2)
-                .addGap(237, 237, 237)
+                .addGap(80, 80, 80)
+                .addComponent(jButton4)
+                .addGap(84, 84, 84)
                 .addComponent(jButton3)
                 .addGap(30, 30, 30))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
                 .addComponent(jSeparator1)
+                .addContainerGap())
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -725,7 +797,8 @@ public class Persona extends javax.swing.JInternalFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton1)
                     .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jButton3))
+                    .addComponent(jButton3)
+                    .addComponent(jButton4))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(5, 5, 5)
@@ -746,14 +819,13 @@ public class Persona extends javax.swing.JInternalFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jButton4ActionPerformed
-
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
       habilitar();
       btnActualizar.setVisible(true);
+      btnActualizar.setText("ACTUALIZAR");
       System.out.println(tipoPersona.getSelectedItem());
+      limpiar();
+      flag = 0;
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
@@ -765,13 +837,30 @@ public class Persona extends javax.swing.JInternalFrame {
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-        pop = new PopupImprovisado();
-        pop.setVisible(true);
+        eliminar();
     }//GEN-LAST:event_jButton3ActionPerformed
 
     private void btnActualizarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnActualizarActionPerformed
-        insertar();
+        if(flag == 1){  
+            modificar();
+        }
+        else{           
+            System.out.println("LLAMANDO INSERTAR");
+            try {
+                insertar();
+            } catch (SQLException ex) {
+                System.out.println("ERROR INSERTAR");
+            }
+        }
     }//GEN-LAST:event_btnActualizarActionPerformed
+
+    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
+        try {
+            rndNumero();
+        } catch (SQLException ex) {
+            System.out.println("ERROR AL LLAMAR TEST");
+        }
+    }//GEN-LAST:event_jButton4ActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -786,26 +875,9 @@ public class Persona extends javax.swing.JInternalFrame {
     private javax.swing.JTextField idPersona;
     private javax.swing.JTextField interiorPersona;
     private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton10;
-    private javax.swing.JButton jButton11;
-    private javax.swing.JButton jButton12;
-    private javax.swing.JButton jButton13;
-    private javax.swing.JButton jButton14;
-    private javax.swing.JButton jButton15;
-    private javax.swing.JButton jButton16;
-    private javax.swing.JButton jButton17;
-    private javax.swing.JButton jButton18;
-    private javax.swing.JButton jButton19;
     private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton20;
-    private javax.swing.JButton jButton21;
     private javax.swing.JButton jButton3;
     private javax.swing.JButton jButton4;
-    private javax.swing.JButton jButton5;
-    private javax.swing.JButton jButton6;
-    private javax.swing.JButton jButton7;
-    private javax.swing.JButton jButton8;
-    private javax.swing.JButton jButton9;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;

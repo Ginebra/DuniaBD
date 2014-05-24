@@ -243,8 +243,8 @@ public class Producto extends javax.swing.JInternalFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        PopupImprovisado p = new PopupImprovisado();
-        p.setVisible(true);
+        //PopupImprovisado p = new PopupImprovisado();
+        //p.setVisible(true);
     }//GEN-LAST:event_jButton2ActionPerformed
 
 

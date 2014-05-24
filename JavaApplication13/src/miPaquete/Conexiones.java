@@ -2,6 +2,7 @@ package miPaquete;
 
 import java.sql.*;
 import java.util.*;
+import javax.swing.JOptionPane;
 
 public class Conexiones {
     
@@ -23,85 +24,73 @@ public class Conexiones {
       }
       
       
-      public Connection conectar2(){
-          String usua = "sa";
-          String pass = "123";
-          System.out.println("intentando con: "+usua+" y "+pass);
-        try{
-            String connectionUrl;
-            connectionUrl = "jdbc:sqlserver://localhost;"
-                      + "databaseName=FACTURA;user="+usua+";password="+pass+";";
-            conect = DriverManager.getConnection(connectionUrl);
-            System.out.println("Conectado.");
+      public Connection conecta2(){
             return conect;
-        }catch (SQLException ex){
-            System.out.println("Error en conectar");
-        }
-        return null;
       }
       
       
-      public ResultSet ConsultarPersona(int id, String SQL){
-          System.out.println("intentando buscar id "+id);
+      public ResultSet Consultar(int id, String SQL){
           try {  
             Statement estado = conect.createStatement();
             ResultSet resultado;
             resultado = estado.executeQuery(SQL+id);
             return resultado;
-            /*while (resultado.next()) {
-                System.out.println(
-                                resultado.getString("NOMBRE") 
-                       + "\t" + resultado.getString("APELLIDO_MATERNO")
-                       + "\t" + resultado.getString("APELLIDO_PATERNO")
-                       + "\t" + resultado.getString("RAZON_SOCIAL")
-                       + "\t" + resultado.getString("RFC")
-                       + "\t" + resultado.getString("REGIMEN_FISCAL")
-                       + "\t" + resultado.getString("ID_PERSONA")
-                       + "\t" + resultado.getString("TIPO_PERSONA")+"\n");
-            }
-            
-            resultado.close();
-            estado.close();
-            */
             }
             catch (SQLException e) {
                 System.out.println("Error en Consultar");
+                JOptionPane.showMessageDialog(null, "NO EXISTE ESE ID");
             }
         return null;
       }
       
-      public void Modifica() throws SQLException{
-      String SQL = "UPDATE PERSONA set nombre = 'NEKO' where ID_PERSONA = 333";
+      public void Modifica(String SQL) throws SQLException{
+      //String SQL = "UPDATE PERSONA set nombre = 'NEKO' where ID_PERSONA = 333";
             
         try {
             Statement stmt = conect.createStatement();
             stmt.executeUpdate(SQL);
-            System.out.println("Modificacion exitosa");
+            System.out.println("Modificacion exitosa: "+SQL);
         }catch (SQLException e){
             System.out.println("Error en Modificar");
         }
       }
       
-      public void Insertar(String SQL){
-      //String SQL = "INSERT PERSONA VALUES ('JJJD','sdfg','sdffa','rz','rdf','regimen',9,1)" ;
-            
+      public void Insertar(String SQL){         
         try {
             Statement stmt = conect.createStatement();
             stmt.executeUpdate(SQL);
-            System.out.println("Modificacion exitosa");
+            System.out.println("Datos Insertados :"+SQL);
         }catch (SQLException e){
             System.out.println("Error en Insertar");
         }
       }
       
-      public int Aleatorio(){ //300 a 399
+      public void Eliminar(int id, String SQL){         
+        try {
+            Statement stmt = conect.createStatement();
+            stmt.executeUpdate(SQL+id);
+            System.out.println("Eliminacion exitosa ID ="+id);
+        }catch (SQLException e){
+            System.out.println("Error en Eliminar");
+            JOptionPane.showMessageDialog(null, "NO EXISTE ESE ID");
+        }
+      }
+      
+      public int Aleatorio(String sql, String s) throws SQLException{ //300 a 399
           Random rnd = new Random();
-          int r, id;
+          int r;
+          int id=0;
           
-          do{
-          id = rnd.nextInt(400);
-          r = (id >= 300 && id < 400) ? 1 : 2;  //False/True .. ??? 
-          }while(r != 1);
+          
+          Statement estado = conect.createStatement();
+          ResultSet resultado;
+          resultado = estado.executeQuery(sql);
+          
+          while(resultado.next()){
+              do{
+              id = rnd.nextInt(400);
+              }while(id<300);
+          }
           return id;
       }
       
