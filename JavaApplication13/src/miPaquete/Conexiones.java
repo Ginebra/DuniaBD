@@ -33,7 +33,8 @@ public class Conexiones {
           try {  
             Statement estado = conect.createStatement();
             ResultSet resultado;
-            resultado = estado.executeQuery(SQL+id);
+            System.out.println("INTENTANDO CON: "+SQL);
+            resultado = estado.executeQuery(SQL);
             return resultado;
             }
             catch (SQLException e) {

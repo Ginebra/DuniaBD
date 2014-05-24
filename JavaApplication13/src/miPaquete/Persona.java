@@ -21,6 +21,7 @@ public class Persona extends javax.swing.JInternalFrame {
     public int flag = 0;
     Conexiones con = new Conexiones();
     Connection conect;
+    public int idpersona, idtelefono, idpagina, idlogotipo, iddomicilio;
     
     public Persona() {
         initComponents();
@@ -110,32 +111,31 @@ public class Persona extends javax.swing.JInternalFrame {
     public void insertar() throws SQLException{
         
         String SQL;
-        
         String Query,s;
         
         Query = "SELECT ID_PERSONA FROM PERSONA";
         s = "ID_PERSONA";
-        int idpersona = con.Aleatorio(Query, s);
+        idpersona = con.Aleatorio(Query, s);
         System.out.println("El id de persona : "+idpersona);
         
         Query = "SELECT ID_TELEFONO FROM TELEFONO";
         s = "ID_TELEFONO";
-        int idtelefono = con.Aleatorio(Query, s);
+        idtelefono = con.Aleatorio(Query, s);
         System.out.println("El id de telefono : "+idtelefono);
         
         Query = "SELECT ID_PAGINA FROM PAGINA_WEB";
         s = "ID_PAGINA";
-        int idpagina = con.Aleatorio(Query, s);
+        idpagina = con.Aleatorio(Query, s);
         System.out.println("El id de persona : "+idpagina);
         
         Query = "SELECT ID_LOGOTIPO FROM LOGOTIPO";
         s = "ID_LOGOTIPO";
-        int idlogotipo = con.Aleatorio(Query, s);
+        idlogotipo = con.Aleatorio(Query, s);
         System.out.println("El id de LOGOTIPO : "+idlogotipo);
         
         Query = "SELECT ID_DOMICILIO FROM DOMICILIO";
         s = "ID_DOMICILIO";
-        int iddomicilio = con.Aleatorio(Query, s);
+        iddomicilio = con.Aleatorio(Query, s);
         System.out.println("El id de domicilio : "+iddomicilio);
         
         ////Llenar PERSONA
@@ -228,7 +228,36 @@ public class Persona extends javax.swing.JInternalFrame {
         try{
         ResultSet resultado;
         String SQL;
+        SQL = "select * from PERSONA inner join PERSONA_DOMICILIO ON PERSONA.ID_PERSONA = "+id+" INNER JOIN DOMICILIO ON PERSONA_DOMICILIO.ID_DOMICILIO = DOMICILIO.ID_DOMICILIO";
+        resultado = c.Consultar(id,SQL);
         
+         while (resultado.next()) {
+             nombrePersona.setText(resultado.getString("NOMBRE") );
+             maternoPersona.setText(resultado.getString("APELLIDO_MATERNO"));
+             paternoPersona.setText(resultado.getString("APELLIDO_PATERNO"));
+             rsocialPersona.setText(resultado.getString("RAZON_SOCIAL"));
+             rfcPersona.setText(resultado.getString("RFC"));
+             regimenPersona.setText(resultado.getString("REGIMEN_FISCAL"));
+             idPersona.setText(resultado.getString("ID_PERSONA"));
+             tipoPersona.setSelectedItem(resultado.getString("TIPO_PERSONA"));
+             
+             numeroPersona.setText(resultado.getString("NUMERO") );
+             descripcionPersona.setSelectedItem(resultado.getString("DESCRIPCION"));
+             
+             dominioPersona.setText(resultado.getString("DOMINIO") );
+             
+             localizacionPersona.setText(resultado.getString("LOCALIZACION") );
+             
+             ciudadPersona.setText(resultado.getString("CIUDAD"));               
+             coloniaPersona.setText(resultado.getString("COLONIA"));
+             callePersona.setText(resultado.getString("CALLE"));
+             externaPersona.setText(resultado.getString("NUMERO_EXT"));
+             interiorPersona.setText(resultado.getString("NUMERO_INT"));
+             postalPersona.setText(resultado.getString("CP"));
+             estadoPersona.setText(resultado.getString("ESTADO"));
+         }
+        
+            /*
             SQL = "SELECT * FROM persona WHERE ID_PERSONA = ";
             resultado = c.Consultar(id,SQL);
             
@@ -284,6 +313,7 @@ public class Persona extends javax.swing.JInternalFrame {
                 postalPersona.setText(resultado.getString("CP"));
                 estadoPersona.setText(resultado.getString("ESTADO"));
             }  
+        */
         resultado.close();
         }
         catch (SQLException e) {
@@ -460,7 +490,6 @@ public class Persona extends javax.swing.JInternalFrame {
         jButton2 = new javax.swing.JButton();
         jButton3 = new javax.swing.JButton();
         jSeparator1 = new javax.swing.JSeparator();
-        jButton4 = new javax.swing.JButton();
 
         jLabel22.setText("jLabel22");
 
@@ -739,13 +768,6 @@ public class Persona extends javax.swing.JInternalFrame {
             }
         });
 
-        jButton4.setText("jButton4");
-        jButton4.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton4ActionPerformed(evt);
-            }
-        });
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -776,9 +798,7 @@ public class Persona extends javax.swing.JInternalFrame {
                 .addComponent(jButton1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 208, Short.MAX_VALUE)
                 .addComponent(jButton2)
-                .addGap(80, 80, 80)
-                .addComponent(jButton4)
-                .addGap(84, 84, 84)
+                .addGap(237, 237, 237)
                 .addComponent(jButton3)
                 .addGap(30, 30, 30))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
@@ -797,8 +817,7 @@ public class Persona extends javax.swing.JInternalFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton1)
                     .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jButton3)
-                    .addComponent(jButton4))
+                    .addComponent(jButton3))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(5, 5, 5)
@@ -854,14 +873,6 @@ public class Persona extends javax.swing.JInternalFrame {
         }
     }//GEN-LAST:event_btnActualizarActionPerformed
 
-    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
-        try {
-            rndNumero();
-        } catch (SQLException ex) {
-            System.out.println("ERROR AL LLAMAR TEST");
-        }
-    }//GEN-LAST:event_jButton4ActionPerformed
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnActualizar;
@@ -877,7 +888,6 @@ public class Persona extends javax.swing.JInternalFrame {
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
-    private javax.swing.JButton jButton4;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
