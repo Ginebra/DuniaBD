@@ -228,10 +228,33 @@ public class Persona extends javax.swing.JInternalFrame {
         try{
         ResultSet resultado;
         String SQL;
-        SQL = "select * from PERSONA inner join PERSONA_DOMICILIO ON PERSONA.ID_PERSONA = "+id+" INNER JOIN DOMICILIO ON PERSONA_DOMICILIO.ID_DOMICILIO = DOMICILIO.ID_DOMICILIO";
+        
+        SQL = "select * \n" +
+            "from PERSONA \n" +
+            "\n" +
+            "INNER JOIN PERSONA_DOMICILIO\n" +
+            "ON PERSONA.ID_PERSONA = "+id+"\n" +
+            "INNER JOIN DOMICILIO\n" +
+            "ON PERSONA_DOMICILIO.ID_DOMICILIO = DOMICILIO.ID_DOMICILIO\n" +
+            "\n" +
+            "INNER JOIN PERSONA_TELEFONO\n" +
+            "ON PERSONA_TELEFONO.ID_PERSONA = PERSONA.ID_PERSONA\n" +
+            "INNER JOIN TELEFONO\n" +
+            "ON PERSONA_TELEFONO.ID_TELEFONO = TELEFONO.ID_TELEFONO\n" +
+            "\n" +
+            "INNER JOIN PERSONA_PAGINA\n" +
+            "ON PERSONA_PAGINA.ID_PERSONA = PERSONA.ID_PERSONA\n" +
+            "INNER JOIN PAGINA_WEB\n" +
+            "ON PERSONA_PAGINA.ID_PAGINA = PAGINA_WEB.ID_PAGINA\n" +
+            "\n" +
+            "INNER JOIN PERSONA_LOGOTIPO\n" +
+            "ON PERSONA_LOGOTIPO.ID_PERSONA = PERSONA.ID_PERSONA\n" +
+            "INNER JOIN LOGOTIPO\n" +
+            "ON PERSONA_LOGOTIPO.ID_LOGOTIPO = LOGOTIPO.ID_LOGOTIPO";
         resultado = c.Consultar(id,SQL);
         
          while (resultado.next()) {
+             //Persona
              nombrePersona.setText(resultado.getString("NOMBRE") );
              maternoPersona.setText(resultado.getString("APELLIDO_MATERNO"));
              paternoPersona.setText(resultado.getString("APELLIDO_PATERNO"));
@@ -241,13 +264,17 @@ public class Persona extends javax.swing.JInternalFrame {
              idPersona.setText(resultado.getString("ID_PERSONA"));
              tipoPersona.setSelectedItem(resultado.getString("TIPO_PERSONA"));
              
+             //Telefono
              numeroPersona.setText(resultado.getString("NUMERO") );
              descripcionPersona.setSelectedItem(resultado.getString("DESCRIPCION"));
              
+             //Pagina Web
              dominioPersona.setText(resultado.getString("DOMINIO") );
              
+             //Logotipo
              localizacionPersona.setText(resultado.getString("LOCALIZACION") );
              
+             //Domicilio
              ciudadPersona.setText(resultado.getString("CIUDAD"));               
              coloniaPersona.setText(resultado.getString("COLONIA"));
              callePersona.setText(resultado.getString("CALLE"));
@@ -255,65 +282,15 @@ public class Persona extends javax.swing.JInternalFrame {
              interiorPersona.setText(resultado.getString("NUMERO_INT"));
              postalPersona.setText(resultado.getString("CP"));
              estadoPersona.setText(resultado.getString("ESTADO"));
+             
+             //ASIGNACION DE ID's
+             idpersona = Integer.parseInt(resultado.getString("ID_PERSONA"));
+             idtelefono = Integer.parseInt(resultado.getString("ID_TELEFONO"));
+             idpagina = Integer.parseInt(resultado.getString("ID_PAGINA"));
+             idlogotipo = Integer.parseInt(resultado.getString("ID_LOGOTIPO"));
+             iddomicilio = Integer.parseInt(resultado.getString("ID_DOMICILIO"));
          }
         
-            /*
-            SQL = "SELECT * FROM persona WHERE ID_PERSONA = ";
-            resultado = c.Consultar(id,SQL);
-            
-            while (resultado.next()) {
-                nombrePersona.setText(resultado.getString("NOMBRE") );
-                maternoPersona.setText(resultado.getString("APELLIDO_MATERNO"));
-                paternoPersona.setText(resultado.getString("APELLIDO_PATERNO"));
-                rsocialPersona.setText(resultado.getString("RAZON_SOCIAL"));
-                rfcPersona.setText(resultado.getString("RFC"));
-                regimenPersona.setText(resultado.getString("REGIMEN_FISCAL"));
-                idPersona.setText(resultado.getString("ID_PERSONA"));
-                tipoPersona.setSelectedItem(resultado.getString("TIPO_PERSONA"));
-            }
-            
-            ///////////////TELEFONO///////////
-            
-            SQL = "SELECT * FROM TELEFONO WHERE ID_TELEFONO = ";
-            resultado = c.Consultar(id,SQL);
-            
-            while (resultado.next()) {
-                numeroPersona.setText(resultado.getString("NUMERO") );
-                descripcionPersona.setSelectedItem(resultado.getString("DESCRIPCION"));
-            }
-            
-            ///////////PAGINA WEB//////////////
-            SQL = "SELECT * FROM PAGINA_WEB WHERE ID_PAGINA = ";
-            resultado = c.Consultar(id,SQL);
-            
-            while (resultado.next()) {
-                dominioPersona.setText(resultado.getString("DOMINIO") );
-                //descripcionPersona.????
-            }
-            
-            ///////////LOGOTIPO//////////////
-            SQL = "SELECT * FROM LOGOTIPO WHERE ID_LOGOTIPO = ";
-            resultado = c.Consultar(id,SQL);
-            
-            while (resultado.next()) {
-                localizacionPersona.setText(resultado.getString("LOCALIZACION") );
-                //descripcionPersona.????
-            }
-            
-            ///////////DOMICILIO//////////////
-            SQL = "SELECT * FROM DOMICILIO WHERE ID_DOMICILIO = ";
-            resultado = c.Consultar(id,SQL);
-            
-            while (resultado.next()) {
-                ciudadPersona.setText(resultado.getString("CIUDAD"));
-                coloniaPersona.setText(resultado.getString("COLONIA"));
-                callePersona.setText(resultado.getString("CALLE"));
-                externaPersona.setText(resultado.getString("NUMERO_EXT"));
-                interiorPersona.setText(resultado.getString("NUMERO_INT"));
-                postalPersona.setText(resultado.getString("CP"));
-                estadoPersona.setText(resultado.getString("ESTADO"));
-            }  
-        */
         resultado.close();
         }
         catch (SQLException e) {
@@ -339,7 +316,7 @@ public class Persona extends javax.swing.JInternalFrame {
                     + "RFC = '"+rfcPersona.getText()+"', "
                     + "REGIMEN_FISCAL = '"+regimenPersona.getText()+"', "
                     + "TIPO_PERSONA = "+tipo+" "
-                    + "where ID_PERSONA = "+idPersona.getText()+"";
+                    + "where ID_PERSONA = "+idpersona+"";
             mod.Modifica(SQL);
             
              
@@ -347,14 +324,14 @@ public class Persona extends javax.swing.JInternalFrame {
             SQL = "UPDATE TELEFONO SET "
                     + "NUMERO = "+numeroPersona.getText()+", "
                     + "DESCRIPCION = '"+descripcionPersona.getSelectedItem()+"' "
-                    + "WHERE ID_TELEFONO = "+idPersona.getText()+"";
+                    + "WHERE ID_TELEFONO = "+idtelefono+"";
             mod.Modifica(SQL);
             
             
             ///////////PAGINA WEB//////////////
             SQL = "UPDATE PAGINA_WEB SET "
                     + "DOMINIO = '"+dominioPersona.getText()+"' "
-                    + "WHERE ID_PAGINA = "+idPersona.getText()+"";
+                    + "WHERE ID_PAGINA = "+idpagina+"";
             mod.Modifica(SQL);
             
            /*
@@ -374,7 +351,7 @@ public class Persona extends javax.swing.JInternalFrame {
                     + "NUMERO_INT = "+interiorPersona.getText()+", "
                     + "CP = "+postalPersona.getText()+", "
                     + "ESTADO = '"+estadoPersona.getText()+"' "
-                    + "WHERE ID_DOMICILIO = "+idPersona.getText()+"";
+                    + "WHERE ID_DOMICILIO = "+iddomicilio+"";
             mod.Modifica(SQL);
             
         }
