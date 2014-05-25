@@ -26,7 +26,7 @@ public class Persona extends javax.swing.JInternalFrame {
     public Persona() {
         initComponents();
         inhabilitar();
-        btnActualizar.setVisible(false);
+        btnActualizar.setVisible(true);
         conect = con.conecta2();
     }
     
@@ -470,7 +470,7 @@ public class Persona extends javax.swing.JInternalFrame {
 
         jLabel22.setText("jLabel22");
 
-        setPreferredSize(new java.awt.Dimension(950, 530));
+        setPreferredSize(new java.awt.Dimension(950, 550));
 
         jPanel1.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
 
