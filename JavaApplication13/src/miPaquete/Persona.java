@@ -26,7 +26,7 @@ public class Persona extends javax.swing.JInternalFrame {
     public Persona() {
         initComponents();
         inhabilitar();
-        btnActualizar.setVisible(true);
+        btnActualizar.setVisible(false);
         conect = con.conecta2();
     }
     
@@ -109,7 +109,7 @@ public class Persona extends javax.swing.JInternalFrame {
        
    
     public void insertar() throws SQLException{
-        
+         
         String SQL;
         String Query,s;
         
@@ -206,14 +206,16 @@ public class Persona extends javax.swing.JInternalFrame {
                 + ""+iddomicilio+")";
         con.Insertar(SQL);
         
+        idPersona.setText(Integer.toString(idpersona));
+        JOptionPane.showMessageDialog(this, "Tu ID de USUARIO es: "
+                + ""+idPersona.getText());
+        
         limpiar();
+
     }
     
     public void buscar () throws SQLException{
-        Conexiones c = new Conexiones();
-        Connection conect;
-        conect = c.conecta2();
-        int id = Integer.parseInt( JOptionPane.showInputDialog(
+        int idbuscar = Integer.parseInt( JOptionPane.showInputDialog(
         null,"Introduzca el ID a buscar",
         "BUSCADOR",
         JOptionPane.QUESTION_MESSAGE) );
@@ -228,30 +230,28 @@ public class Persona extends javax.swing.JInternalFrame {
         try{
         ResultSet resultado;
         String SQL;
+                
+        //SQL = "SELECT * FROM PERSONA INNER JOIN PERSONA_DOMICILIO ON PERSONA_DOMICILIO.ID_PERSONA = PERSONA.ID_PERSONA INNER JOIN DOMICILIO ON PERSONA_DOMICILIO.ID_DOMICILIO = DOMICILIO.ID_DOMICILIO INNER JOIN PERSONA_TELEFONO ON PERSONA_TELEFONO.ID_PERSONA = PERSONA.ID_PERSONA INNER JOIN TELEFONO ON PERSONA_TELEFONO.ID_TELEFONO = TELEFONO.ID_TELEFONO INNER JOIN PERSONA_PAGINA ON PERSONA_PAGINA.ID_PERSONA = PERSONA.ID_PERSONA INNER JOIN PAGINA_WEB ON PERSONA_PAGINA.ID_PAGINA = PAGINA_WEB.ID_PAGINA INNER JOIN PERSONA_LOGOTIPO ON PERSONA_LOGOTIPO.ID_PERSONA = PERSONA.ID_PERSONA INNER JOIN LOGOTIPO ON PERSONA_LOGOTIPO.ID_LOGOTIPO = LOGOTIPO.ID_LOGOTIPO WHERE PERSONA.ID_PERSONA = "+idbuscar+"";
+        SQL = "SELECT * FROM PERSONA "
+                + "INNER JOIN PERSONA_DOMICILIO "
+                + "ON PERSONA_DOMICILIO.ID_PERSONA = PERSONA.ID_PERSONA "
+                + "INNER JOIN DOMICILIO "
+                + "ON PERSONA_DOMICILIO.ID_DOMICILIO = DOMICILIO.ID_DOMICILIO "
+                + "INNER JOIN PERSONA_TELEFONO "
+                + "ON PERSONA_TELEFONO.ID_PERSONA = PERSONA.ID_PERSONA "
+                + "INNER JOIN TELEFONO "
+                + "ON PERSONA_TELEFONO.ID_TELEFONO = TELEFONO.ID_TELEFONO "
+                + "INNER JOIN PERSONA_PAGINA "
+                + "ON PERSONA_PAGINA.ID_PERSONA = PERSONA.ID_PERSONA "
+                + "INNER JOIN PAGINA_WEB "
+                + "ON PERSONA_PAGINA.ID_PAGINA = PAGINA_WEB.ID_PAGINA "
+                + "INNER JOIN PERSONA_LOGOTIPO "
+                + "ON PERSONA_LOGOTIPO.ID_PERSONA = PERSONA.ID_PERSONA "
+                + "INNER JOIN LOGOTIPO "
+                + "ON PERSONA_LOGOTIPO.ID_LOGOTIPO = LOGOTIPO.ID_LOGOTIPO "
+                + "WHERE PERSONA.ID_PERSONA = "+idbuscar+"";
         
-        SQL = "select * \n" +
-            "from PERSONA \n" +
-            "\n" +
-            "INNER JOIN PERSONA_DOMICILIO\n" +
-            "ON PERSONA.ID_PERSONA = "+id+"\n" +
-            "INNER JOIN DOMICILIO\n" +
-            "ON PERSONA_DOMICILIO.ID_DOMICILIO = DOMICILIO.ID_DOMICILIO\n" +
-            "\n" +
-            "INNER JOIN PERSONA_TELEFONO\n" +
-            "ON PERSONA_TELEFONO.ID_PERSONA = PERSONA.ID_PERSONA\n" +
-            "INNER JOIN TELEFONO\n" +
-            "ON PERSONA_TELEFONO.ID_TELEFONO = TELEFONO.ID_TELEFONO\n" +
-            "\n" +
-            "INNER JOIN PERSONA_PAGINA\n" +
-            "ON PERSONA_PAGINA.ID_PERSONA = PERSONA.ID_PERSONA\n" +
-            "INNER JOIN PAGINA_WEB\n" +
-            "ON PERSONA_PAGINA.ID_PAGINA = PAGINA_WEB.ID_PAGINA\n" +
-            "\n" +
-            "INNER JOIN PERSONA_LOGOTIPO\n" +
-            "ON PERSONA_LOGOTIPO.ID_PERSONA = PERSONA.ID_PERSONA\n" +
-            "INNER JOIN LOGOTIPO\n" +
-            "ON PERSONA_LOGOTIPO.ID_LOGOTIPO = LOGOTIPO.ID_LOGOTIPO";
-        resultado = c.Consultar(id,SQL);
+        resultado = con.Consultar(idbuscar,SQL);
         
          while (resultado.next()) {
              //Persona
@@ -283,7 +283,7 @@ public class Persona extends javax.swing.JInternalFrame {
              postalPersona.setText(resultado.getString("CP"));
              estadoPersona.setText(resultado.getString("ESTADO"));
              
-             //ASIGNACION DE ID's
+             //ASIGNACION DE ID's globales
              idpersona = Integer.parseInt(resultado.getString("ID_PERSONA"));
              idtelefono = Integer.parseInt(resultado.getString("ID_TELEFONO"));
              idpagina = Integer.parseInt(resultado.getString("ID_PAGINA"));
@@ -297,121 +297,118 @@ public class Persona extends javax.swing.JInternalFrame {
             System.out.println("Error en Consultar");
             JOptionPane.showMessageDialog(null, "No hay datos");
         }
-        
     }
     
     public void modificar (){
-        Conexiones mod = new Conexiones();
+         Conexiones mod = new Conexiones();
         int tipo = (tipoPersona.getSelectedItem() == "moral") ? 1 : 0;
         
-        try{
         String SQL;
-        
-            ///////////////PERSONA///////////   
-            SQL = "UPDATE PERSONA set "
-                    + "NOMBRE = '"+nombrePersona.getText()+"', "
-                    + "APELLIDO_MATERNO = '"+maternoPersona.getText()+"', "
-                    + "APELLIDO_PATERNO = '"+paternoPersona.getText()+"',"
-                    + "RAZON_SOCIAL = '"+rsocialPersona.getText()+"', "
-                    + "RFC = '"+rfcPersona.getText()+"', "
-                    + "REGIMEN_FISCAL = '"+regimenPersona.getText()+"', "
-                    + "TIPO_PERSONA = "+tipo+" "
-                    + "where ID_PERSONA = "+idpersona+"";
-            mod.Modifica(SQL);
-            
-             
-            ///////////////TELEFONO///////////
-            SQL = "UPDATE TELEFONO SET "
-                    + "NUMERO = "+numeroPersona.getText()+", "
-                    + "DESCRIPCION = '"+descripcionPersona.getSelectedItem()+"' "
-                    + "WHERE ID_TELEFONO = "+idtelefono+"";
-            mod.Modifica(SQL);
-            
-            
-            ///////////PAGINA WEB//////////////
-            SQL = "UPDATE PAGINA_WEB SET "
-                    + "DOMINIO = '"+dominioPersona.getText()+"' "
-                    + "WHERE ID_PAGINA = "+idpagina+"";
-            mod.Modifica(SQL);
-            
-           /*
-            ///////////LOGOTIPO//////////////
-            SQL = "UPDATE LOGOTIPO SET "
-                    + "LOCALIZACION = '"+localizacionPersona.getText()+"' "
-                    + "WHERE ID_LOGOTIPO = ";
-            mod.Modifica(SQL);
-           */
-            
-            ///////////DOMICILIO//////////////
-            SQL = "UPDATE DOMICILIO SET "
-                    + "CIUDAD = '"+ciudadPersona.getText()+"', "
-                    + "COLONIA = '"+coloniaPersona.getText()+"', "
-                    + "CALLE = '"+callePersona.getText()+"', "
-                    + "NUMERO_EXT = "+externaPersona.getText()+", "
-                    + "NUMERO_INT = "+interiorPersona.getText()+", "
-                    + "CP = "+postalPersona.getText()+", "
-                    + "ESTADO = '"+estadoPersona.getText()+"' "
-                    + "WHERE ID_DOMICILIO = "+iddomicilio+"";
-            mod.Modifica(SQL);
-            
-        }
-        catch (SQLException e) {
-            System.out.println("Error en Consultar");
-            JOptionPane.showMessageDialog(null, "No hay datos");
-        }
+        SQL = "UPDATE PERSONA set "
+                + "NOMBRE = '"+nombrePersona.getText()+"', "
+                + "APELLIDO_MATERNO = '"+maternoPersona.getText()+"', "
+                + "APELLIDO_PATERNO = '"+paternoPersona.getText()+"',"
+                + "RAZON_SOCIAL = '"+rsocialPersona.getText()+"', "
+                + "RFC = '"+rfcPersona.getText()+"', "
+                + "REGIMEN_FISCAL = '"+regimenPersona.getText()+"', "
+                + "TIPO_PERSONA = "+tipo+" "
+                + "where ID_PERSONA = "+idpersona+"";
+        mod.Insertar(SQL);
+        SQL = "UPDATE TELEFONO SET "
+                + "NUMERO = "+numeroPersona.getText()+", "
+                + "DESCRIPCION = '"+descripcionPersona.getSelectedItem()+"' "
+                + "WHERE ID_TELEFONO = "+idtelefono+"";
+        mod.Insertar(SQL);
+        SQL = "UPDATE PAGINA_WEB SET "
+                + "DOMINIO = '"+dominioPersona.getText()+"' "
+                + "WHERE ID_PAGINA = "+idpagina+"";
+        mod.Insertar(SQL);
+        SQL = "UPDATE DOMICILIO SET "
+                + "CIUDAD = '"+ciudadPersona.getText()+"', "
+                + "COLONIA = '"+coloniaPersona.getText()+"', "
+                + "CALLE = '"+callePersona.getText()+"', "
+                + "NUMERO_EXT = "+externaPersona.getText()+", "
+                + "NUMERO_INT = "+interiorPersona.getText()+", "
+                + "CP = "+postalPersona.getText()+", "
+                + "ESTADO = '"+estadoPersona.getText()+"' "
+                + "WHERE ID_DOMICILIO = "+iddomicilio+"";
+        mod.Insertar(SQL);
+
     }
     
     
     public void eliminar(){
-        Conexiones con = new Conexiones();
-        
-        int id = Integer.parseInt( JOptionPane.showInputDialog(
-        null,"Introduzca el ID a eliminar",
+         int ideliminar = Integer.parseInt( JOptionPane.showInputDialog(
+        null,"Introduzca el ID a ELIMINAR",
         "BUSCADOR",
-        JOptionPane.QUESTION_MESSAGE));
+        JOptionPane.QUESTION_MESSAGE) );
         
+        try{
+        ResultSet resultado;
         String SQL;
-        SQL = "DELETE FROM PERSONA WHERE ID_PERSONA =";
-        con.Eliminar(id,SQL);
-        SQL = "DELETE FROM TELEFONO WHERE ID_TELEFONO = ";
-        con.Eliminar(id,SQL);
-        SQL = "DELETE FROM PAGINA_WEB WHERE ID_PAGINA = ";
-        con.Eliminar(id,SQL);
-        SQL = "DELETE FROM LOGOTIPO WHERE ID_LOGOTIPO = ";
-        con.Eliminar(id,SQL);
-        SQL = "DELETE FROM DOMICILIO WHERE ID_DOMICILIO = ";
-        con.Eliminar(id,SQL);   
+        
+        SQL = "SELECT * FROM PERSONA "
+                + "INNER JOIN PERSONA_DOMICILIO "
+                + "ON PERSONA_DOMICILIO.ID_PERSONA = PERSONA.ID_PERSONA "
+                + "INNER JOIN DOMICILIO "
+                + "ON PERSONA_DOMICILIO.ID_DOMICILIO = DOMICILIO.ID_DOMICILIO "
+                + "INNER JOIN PERSONA_TELEFONO "
+                + "ON PERSONA_TELEFONO.ID_PERSONA = PERSONA.ID_PERSONA "
+                + "INNER JOIN TELEFONO "
+                + "ON PERSONA_TELEFONO.ID_TELEFONO = TELEFONO.ID_TELEFONO "
+                + "INNER JOIN PERSONA_PAGINA "
+                + "ON PERSONA_PAGINA.ID_PERSONA = PERSONA.ID_PERSONA "
+                + "INNER JOIN PAGINA_WEB "
+                + "ON PERSONA_PAGINA.ID_PAGINA = PAGINA_WEB.ID_PAGINA "
+                + "INNER JOIN PERSONA_LOGOTIPO "
+                + "ON PERSONA_LOGOTIPO.ID_PERSONA = PERSONA.ID_PERSONA "
+                + "INNER JOIN LOGOTIPO "
+                + "ON PERSONA_LOGOTIPO.ID_LOGOTIPO = LOGOTIPO.ID_LOGOTIPO "
+                + "WHERE PERSONA.ID_PERSONA = "+ideliminar+"";
+        resultado = con.Consultar(ideliminar,SQL);
+        
+         while (resultado.next()) {
+             //ASIGNACION DE ID's
+             idpersona = Integer.parseInt(resultado.getString("ID_PERSONA"));
+             idtelefono = Integer.parseInt(resultado.getString("ID_TELEFONO"));
+             idpagina = Integer.parseInt(resultado.getString("ID_PAGINA"));
+             idlogotipo = Integer.parseInt(resultado.getString("ID_LOGOTIPO"));
+             iddomicilio = Integer.parseInt(resultado.getString("ID_DOMICILIO"));
+         }
+        
+        resultado.close();
+        }
+        catch (SQLException e) {
+            System.out.println("Error en Consultar para Eliminar");
+            JOptionPane.showMessageDialog(null, "No hay datos");
+        }
+       
+        String SQL;
+        SQL = "DELETE PERSONA_DOMICILIO WHERE ID_PERSONA =";
+        con.Eliminar(idpersona,SQL);
+        SQL = "DELETE PERSONA_LOGOTIPO WHERE ID_PERSONA =";
+        con.Eliminar(idpersona,SQL);
+        SQL = "DELETE PERSONA_PAGINA WHERE ID_PERSONA =";
+        con.Eliminar(idpersona,SQL);
+        SQL = "DELETE PERSONA_TELEFONO WHERE ID_PERSONA =";
+        con.Eliminar(idpersona,SQL);
+        
+        SQL = "DELETE PERSONA WHERE ID_PERSONA =";
+        con.Eliminar(idpersona,SQL);
+        SQL = "DELETE TELEFONO WHERE ID_TELEFONO = ";
+        con.Eliminar(idtelefono,SQL);
+        SQL = "DELETE PAGINA_WEB WHERE ID_PAGINA = ";
+        con.Eliminar(idpagina,SQL);
+        SQL = "DELETE LOGOTIPO WHERE ID_LOGOTIPO = ";
+        con.Eliminar(idlogotipo,SQL);
+        SQL = "DELETE DOMICILIO WHERE ID_DOMICILIO = ";
+        con.Eliminar(iddomicilio,SQL);   
         
         JOptionPane.showMessageDialog(null, "Eliminacion Exitosa");
-    }
-    
-    void rndNumero() throws SQLException{
-        String Query,s;
-        
-        Query = "SELECT ID_PERSONA FROM PERSONA";
-        s = "ID_PERSONA";
-        
-        System.out.println("El id de persona : "+con.Aleatorio(Query, s));
-        
-        Query = "SELECT ID_TELEFONO FROM TELEFONO";
-        s = "ID_TELEFONO";
-        System.out.println("El id de telefono : "+con.Aleatorio(Query, s));
-        
-        Query = "SELECT ID_PAGINA FROM PAGINA_WEB";
-        s = "ID_PAGINA";
-        System.out.println("El id de persona : "+con.Aleatorio(Query, s));
-        
-        Query = "SELECT ID_LOGOTIPO FROM LOGOTIPO";
-        s = "ID_LOGOTIPO";
-        System.out.println("El id de LOGOTIPO : "+con.Aleatorio(Query, s));
-        
-        Query = "SELECT ID_DOMICILIO FROM DOMICILIO";
-        s = "ID_DOMICILIO";
-        System.out.println("El id de domicilio : "+con.Aleatorio(Query, s));
-        
+        limpiar();
        }
     
-   
+
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {

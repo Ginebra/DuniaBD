@@ -6,6 +6,7 @@ import java.util.*;
 import javax.swing.JOptionPane;
 
 public class Conexiones {
+    int folio=0;
     
     private static Connection conect;
       
@@ -28,35 +29,38 @@ public class Conexiones {
       public Connection conecta2(){
             return conect;
       }
+      //eliminar
+      public ResultSet generar(String SQL){
+          try {  
+            Statement estado = conect.createStatement();
+            ResultSet resultado;
+            resultado = estado.executeQuery(SQL);
+            return resultado;
+            }
+            catch (SQLException e) {
+                System.out.println("Error en generar");
+               
+            }
+        return null;
+      }
       
       
       public ResultSet Consultar(int id, String SQL){
           try {  
             Statement estado = conect.createStatement();
             ResultSet resultado;
-            System.out.println("INTENTANDO CON: "+SQL);
+           // System.out.println("INTENTANDO CON: "+SQL);
             resultado = estado.executeQuery(SQL);
             return resultado;
             }
             catch (SQLException e) {
                 System.out.println("Error en Consultar");
-                JOptionPane.showMessageDialog(null, "NO EXISTE ESE ID");
+                //JOptionPane.showMessageDialog(null, "NO EXISTE ESE ID");
             }
         return null;
       }
       
-      public void Modifica(String SQL) throws SQLException{
-      //String SQL = "UPDATE PERSONA set nombre = 'NEKO' where ID_PERSONA = 333";
-            
-        try {
-            Statement stmt = conect.createStatement();
-            stmt.executeUpdate(SQL);
-            System.out.println("Modificacion exitosa: "+SQL);
-        }catch (SQLException e){
-            System.out.println("Error en Modificar");
-        }
-      }
-      
+     
       public void Insertar(String SQL){         
         try {
             Statement stmt = conect.createStatement();
@@ -78,23 +82,38 @@ public class Conexiones {
         }
       }
       
+      
       public int Aleatorio(String sql, String s) throws SQLException{ //300 a 399
+          System.out.println("ente al randowm");
           Random rnd = new Random();
           int r;
           int id=0;
-          
           
           Statement estado = conect.createStatement();
           ResultSet resultado;
           resultado = estado.executeQuery(sql);
           
-          while(resultado.next()){
+          while(resultado.next() || id == 0){
               do{
               id = rnd.nextInt(400);
               }while(id<300);
           }
           return id;
       }
+      
+      public int Folio(String sql, String s) throws SQLException{ //300 a 399
+          Statement estado = conect.createStatement();
+          ResultSet resultado;
+          resultado = estado.executeQuery(sql);
+          
+          while(resultado.next() ){
+              folio++;
+          }
+          return folio;
+      }
+      
+      
+      
       
       public void Timbre(){
           try {       

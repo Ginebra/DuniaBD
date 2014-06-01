@@ -6,9 +6,13 @@
 
 package miPaquete;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -16,14 +20,20 @@ import javax.swing.table.DefaultTableModel;
  * @author neko & Ana
  */
 public class Producto extends javax.swing.JInternalFrame {
-DefaultTableModel m;
+DefaultTableModel m ;
 String SQL;
 Conexiones con = new Conexiones();  
- public int iddescuento, idiva;
-    public Producto() {
-       
+ Connection conect;
+ ResultSet r;
+   int c=1, id;
+ String Query,s;
+ public int iddescuento=300, idiva=300, flag=-1, band=0;
+  
+ public Producto(){
         initComponents();
+         GenerarTabla();
          inhabilitar();
+      
     }
 
     public void limpiar(){
@@ -59,13 +69,11 @@ Conexiones con = new Conexiones();
         promocionProducto.setEditable(true);
     }
     public void insertar() throws SQLException{
-        String SQL;
-        String Query,s;
-        
+        System.out.println("inicia metodo de insertar");
         Query = "SELECT ID_IVA FROM IVA";
         s = "ID_IVA";
         idiva = con.Aleatorio(Query, s);
-        System.out.println("El id de iva : "+ivaProducto);
+        System.out.println("El id de iva : "+idiva);
         
         Query = "SELECT ID_DESCUENTO FROM DESCUENTO";
         s = "ID_DESCUENTO";
@@ -82,26 +90,88 @@ Conexiones con = new Conexiones();
         
         ////Llenar IVA
         SQL = "INSERT IVA VALUES "
-                + "("+idiva+","
-                + "'"+ivaProducto.getText()+"')";
+                + "('"+ivaProducto.getText()+"',"
+                +idiva+")";
         con.Insertar(SQL);
         
         //Llenar  DESCUENTO
         SQL = "INSERT DESCUENTO VALUES "
                 + "("+iddescuento+","
-                + "'"+finProducto.getText()+"',"
+                + "'"+inicioProducto.getText()+"',"
                 + "'"+finProducto.getText()+"',"
                 + "'"+promocionProducto.getText()+"',"
                 + "'"+cantidadProducto.getText()+"')";       
         con.Insertar(SQL);
+        
+        SQL = "INSERT PRODUCTO_DESCUENTO VALUES "
+                + "('"+codigoProducto.getText()+"',"
+                + ""+iddescuento+")";
+        con.Insertar(SQL);
+        
+        SQL = "INSERT PRODUCTO_IVA VALUES "
+                + "("+codigoProducto.getText()+","
+                + ""+idiva+")";
+        con.Insertar(SQL);
+        
         limpiar();
     }
     @SuppressWarnings("unchecked")
     
     
+     public void modificar() throws SQLException{     
+        try{
+           codigoProducto.setEnabled(false);
+            int id = Integer.parseInt(codigoProducto.getText());
+             SQL="select * From PRODUCTO INNER JOIN PRODUCTO_DESCUENTO "
+                    + "ON PRODUCTO_DESCUENTO.CODIGO = PRODUCTO.CODIGO INNER JOIN DESCUENTO"
+                    + " ON PRODUCTO_DESCUENTO.ID_DESCUENTO= DESCUENTO.ID_DESCUENTO INNER JOIN PRODUCTO_IVA"
+                    + " ON PRODUCTO_IVA.CODIGO = PRODUCTO.CODIGO INNER JOIN IVA "
+                    + "ON PRODUCTO_IVA.ID_IVA= IVA.ID_IVA WHERE PRODUCTO.CODIGO="+id;
+                  
+        r = con.Consultar(id,SQL);
+         while (r.next()) {
+             //ASIGNACION DE ID's
+             idiva = Integer.parseInt(r.getString("ID_IVA"));
+             System.out.println("ID IVA: "+idiva);
+             iddescuento = Integer.parseInt(r.getString("ID_DESCUENTO"));
+             System.out.println("ID DESCUENTO: "+iddescuento); 
+         }
+          r.close();
+            ////modificar tabla PRODUCTO
+         SQL = "UPDATE PRODUCTO set PRECIO = '"+precioProducto.getText()+"',"
+                 + " DESCRIPCION_PRODUCTO = '"+descripcionProducto.getText()
+                 +"' where CODIGO="+id;
+         con.Insertar(SQL);
+         System.out.println("primer modificacion id:"+id);
+         
+         ///modificar tabla DESCUENTO
+         SQL = "UPDATE DESCUENTO SET "
+                    + "FECHA_INICIO = '"+inicioProducto.getText()+"', "
+                    + "FECHA_FIN= '"+finProducto.getText()+"', "
+                    + "DESCRIPCION_DESCUENTO = '"+promocionProducto.getText()+"', "
+                    + "CANTIDAD = '"+cantidadProducto.getText()+"' "
+                    + "WHERE ID_DESCUENTO= "+iddescuento;
+          System.out.println("ID DES: "+iddescuento);
+          con.Insertar(SQL);
+   
+          ///modificar tabla IVA  
+          SQL = "UPDATE IVA SET "
+                    + "CANTIDAD = '"+ivaProducto.getText()+"'"
+                    + "WHERE ID_IVA = "+idiva;
+          con.Insertar(SQL);
+          
+    }catch(SQLException e ){
+        
+    } GenerarTabla();
+    }
+
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jScrollPane2 = new javax.swing.JScrollPane();
+        jTable1 = new javax.swing.JTable();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        jTable2 = new javax.swing.JTable();
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
@@ -124,9 +194,35 @@ Conexiones con = new Conexiones();
         jButton2 = new javax.swing.JButton();
         jButton3 = new javax.swing.JButton();
         jSeparator1 = new javax.swing.JSeparator();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
-        jButton4 = new javax.swing.JButton();
+        btnGuardar = new javax.swing.JButton();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        tablaProducto = new javax.swing.JTable();
+
+        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        jScrollPane2.setViewportView(jTable1);
+
+        jTable2.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        jScrollPane3.setViewportView(jTable2);
 
         setPreferredSize(new java.awt.Dimension(950, 550));
 
@@ -243,7 +339,7 @@ Conexiones con = new Conexiones();
         });
 
         jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/miPaquete/phone-icon.png"))); // NOI18N
-        jButton2.setText("BUSCAR");
+        jButton2.setText("MODIFICAR");
         jButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton2ActionPerformed(evt);
@@ -252,28 +348,35 @@ Conexiones con = new Conexiones();
 
         jButton3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/miPaquete/gift-icon.png"))); // NOI18N
         jButton3.setText("ELIMINAR");
-
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null}
-            },
-            new String [] {
-                "CODIGO", "PRECIO", "DESCRIPCION", "IVA", "FECHA-INICIO", "FECHA-FIN", "CANTIDAD", "PROMOCION"
-            }
-        ));
-        jScrollPane1.setViewportView(jTable1);
-
-        jButton4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/miPaquete/Package-accept-icon.png"))); // NOI18N
-        jButton4.setText("Guardar");
-        jButton4.setToolTipText("");
-        jButton4.addActionListener(new java.awt.event.ActionListener() {
+        jButton3.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton4ActionPerformed(evt);
+                jButton3ActionPerformed(evt);
             }
         });
+
+        btnGuardar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/miPaquete/Package-accept-icon.png"))); // NOI18N
+        btnGuardar.setText("Guardar");
+        btnGuardar.setToolTipText("");
+        btnGuardar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnGuardarActionPerformed(evt);
+            }
+        });
+
+        tablaProducto.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+
+            }
+        ));
+        tablaProducto.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tablaProductoMouseClicked(evt);
+            }
+        });
+        jScrollPane4.setViewportView(tablaProducto);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -284,7 +387,7 @@ Conexiones con = new Conexiones();
                 .addComponent(jButton1)
                 .addGap(173, 173, 173)
                 .addComponent(jButton2)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 176, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 209, Short.MAX_VALUE)
                 .addComponent(jButton3)
                 .addGap(61, 61, 61))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
@@ -295,12 +398,12 @@ Conexiones con = new Conexiones();
                             .addComponent(jPanel2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addGap(29, 29, 29)
-                        .addComponent(jButton4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(btnGuardar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addComponent(jSeparator1))
                 .addGap(16, 16, 16))
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1)
+                .addComponent(jScrollPane4)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -321,48 +424,163 @@ Conexiones con = new Conexiones();
                         .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(75, 75, 75)
-                        .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(18, 18, 18)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(btnGuardar, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(265, 265, 265))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-void rndNumero() throws SQLException{
-        String Query,s;
-        
-        Query = "SELECT ID_IVA FROM IVA";
-        s = "ID_IVA";
-        System.out.println("El id de persona : "+con.Aleatorio(Query, s));
-        
-        Query = "SELECT ID_DESCUENTO FROM DESCUENTO";
-        s = "ID_DESCUENTO";
-        System.out.println("El id descuento : "+con.Aleatorio(Query, s));
-        
-        
-        
-       }
+
+public void GenerarTabla() {
+  
+      try{        
+           String titulos[]={"CODIGO", "PRECIO","DESCRIPCION","IVA%",
+               "FECHA-INICIO","FECHA-FIN","DESCUENTO%", "PROMOCION"};
+            m=new DefaultTableModel(null, titulos);
+            String fila[]=new String[17];
+            
+            SQL="  select * From PRODUCTO INNER JOIN PRODUCTO_DESCUENTO "
+                    + "ON PRODUCTO_DESCUENTO.CODIGO = PRODUCTO.CODIGO INNER JOIN DESCUENTO"
+                    + " ON PRODUCTO_DESCUENTO.ID_DESCUENTO= DESCUENTO.ID_DESCUENTO INNER JOIN PRODUCTO_IVA"
+                    + " ON PRODUCTO_IVA.CODIGO = PRODUCTO.CODIGO INNER JOIN IVA "
+                    + "ON PRODUCTO_IVA.ID_IVA= IVA.ID_IVA WHERE PRODUCTO.CODIGO!=-1";
+           
+            r = con.generar(SQL);
+            while(r.next()){
+                fila[0]=r.getString("CODIGO");
+                fila[1]=r.getString("PRECIO");
+                fila[2]=r.getString("DESCRIPCION_PRODUCTO");
+                fila[3]=r.getString(13);
+                fila[4]=r.getString("FECHA_INICIO");
+                fila[5]=r.getString("FECHA_FIN");
+                fila[6]=r.getString(10);
+                fila[7]=r.getString("DESCRIPCION_DESCUENTO");
+                
+             m.addRow(fila);
+                 c++;
+            }   
+           tablaProducto.setModel(m);
+        }
+        catch (Exception e){
+            JOptionPane.showMessageDialog(null, "Error");
+        }
+          
+}
+
+
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        
+    try {
+        modificar();
+    } catch (SQLException ex) {
+        Logger.getLogger(Producto.class.getName()).log(Level.SEVERE, null, ex);
+    }
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         habilitar();
         limpiar();
+        flag = 0;
+        codigoProducto.setEnabled(true);
     }//GEN-LAST:event_jButton1ActionPerformed
 
-    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
-    try {
-        insertar();
-    } catch (SQLException ex) {
-        Logger.getLogger(Producto.class.getName()).log(Level.SEVERE, null, ex);
-    }
-    }//GEN-LAST:event_jButton4ActionPerformed
+    private void btnGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGuardarActionPerformed
+      if(flag == 1){  
+          try {
+              modificar();
+          } catch (SQLException ex) {
+              System.out.println("error MODIFICAR");
+          }
+            
+        }
+        else{           
+            System.out.println("LLAMANDO INSERTAR");
+            try {
+                insertar();
+                GenerarTabla();
+            } catch (SQLException ex) {
+                System.out.println("ERROR INSERTAR");
+            }
+        }
+    }//GEN-LAST:event_btnGuardarActionPerformed
+
+    private void tablaProductoMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tablaProductoMouseClicked
+       if(evt.getButton()==1){
+           flag=1;
+           int fila=tablaProducto.getSelectedRow();
+           try{
+               habilitar();
+               SQL = "SELECT  CODIGO, PRECIO, DESCRIPCION_PRODUCTO,IVA.CANTIDAD,"
+                  + "FECHA_INICIO, FECHA_FIN,\n" +
+                  "DESCUENTO.CANTIDAD,  DESCRIPCION_DESCUENTO\n" +
+                  "FROM DESCUENTO INNER JOIN IVA\n" +
+                  "ON ID_DESCUENTO !=-1 INNER JOIN PRODUCTO ON CODIGO="+tablaProducto.getValueAt(fila,0);
+               r = con.generar(SQL);
+            
+            while(r.next()){
+                codigoProducto.setText(r.getString("CODIGO"));
+                precioProducto.setText(r.getString("PRECIO"));
+                descripcionProducto.setText(r.getString("DESCRIPCION_PRODUCTO"));
+                ivaProducto.setText(r.getString(4));
+                inicioProducto.setText(r.getString(5));
+                finProducto.setText(r.getString(6));
+                cantidadProducto.setText(r.getString(7));
+                promocionProducto.setText(r.getString(8));
+                
+            }
+           }catch(Exception e){
+                 System.out.println("ERROR CLICK");
+           }
+       }
+    }//GEN-LAST:event_tablaProductoMouseClicked
+
+    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+    //BOTON ELIMINAR
+         int id = Integer.parseInt(codigoProducto.getText());
+        try{
+            
+             SQL="select * From PRODUCTO INNER JOIN PRODUCTO_DESCUENTO "
+                    + "ON PRODUCTO_DESCUENTO.CODIGO = PRODUCTO.CODIGO INNER JOIN DESCUENTO"
+                    + " ON PRODUCTO_DESCUENTO.ID_DESCUENTO= DESCUENTO.ID_DESCUENTO INNER JOIN PRODUCTO_IVA"
+                    + " ON PRODUCTO_IVA.CODIGO = PRODUCTO.CODIGO INNER JOIN IVA "
+                    + "ON PRODUCTO_IVA.ID_IVA= IVA.ID_IVA WHERE PRODUCTO.CODIGO="+id;
+                  
+        r = con.Consultar(id,SQL);
+        
+         while (r.next()) {
+             //ASIGNACION DE ID's
+             idiva = Integer.parseInt(r.getString("ID_IVA"));
+             System.out.println("ID IVA: "+idiva);
+             iddescuento = Integer.parseInt(r.getString("ID_DESCUENTO"));
+             System.out.println("ID DESCUENTO: "+iddescuento); 
+         }
+         r.close();
+       
+        }
+        catch(Exception e){
+            
+        } 
+        SQL = "DELETE PRODUCTO_IVA WHERE ID_IVA =";
+        con.Eliminar(idiva,SQL);
+        SQL = "DELETE PRODUCTO_DESCUENTO WHERE ID_DESCUENTO=";
+        con.Eliminar(iddescuento,SQL);   
+        SQL = "DELETE IVA WHERE ID_IVA =";
+        con.Eliminar(idiva,SQL);
+        SQL = "DELETE DESCUENTO WHERE ID_DESCUENTO =";
+        con.Eliminar(iddescuento,SQL);
+        SQL = "DELETE PRODUCTO WHERE CODIGO =";
+        con.Eliminar(id,SQL);
+        
+        limpiar();
+        GenerarTabla();
+        
+    }//GEN-LAST:event_jButton3ActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel PROMOCION;
+    private javax.swing.JButton btnGuardar;
     private javax.swing.JTextField cantidadProducto;
     private javax.swing.JTextField codigoProducto;
     private javax.swing.JTextField descripcionProducto;
@@ -372,7 +590,6 @@ void rndNumero() throws SQLException{
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
-    private javax.swing.JButton jButton4;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -382,10 +599,14 @@ void rndNumero() throws SQLException{
     private javax.swing.JLabel jLabel8;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
-    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JTable jTable1;
+    private javax.swing.JTable jTable2;
     private javax.swing.JTextField precioProducto;
     private javax.swing.JTextField promocionProducto;
+    private javax.swing.JTable tablaProducto;
     // End of variables declaration//GEN-END:variables
 }
