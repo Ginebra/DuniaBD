@@ -24,7 +24,7 @@ public class Factura extends javax.swing.JInternalFrame {
     DefaultTableModel m ;
     String SQL, fila[]=new String[17],s, importe,
            codigo, cant,precio, iva, descripcion,descuento;
-    int c=1, idBuscar, band=1,idpago,canti=0;
+    int c=1, idBuscar, band=1,idpago,canti=0, flag=0;
     double calcula=0, x=0, total, descue, ivas, subtotal, sub, sub1;
 
     public Factura() {
@@ -102,21 +102,30 @@ public class Factura extends javax.swing.JInternalFrame {
    }
    
    public void Insertar(String codigo, String cant){
-      SQL = "SELECT ID_PAGO FROM FORMA_PAGO";
+      if(flag==0){
+       SQL = "SELECT ID_PAGO FROM FORMA_PAGO";
         s = "ID_PAGO";
      try {
          idpago = con.Aleatorio(SQL,s);
      } catch (SQLException ex) {
          Logger.getLogger(Factura.class.getName()).log(Level.SEVERE, null, ex);
      }
-       
-         SQL = "INSERT FACTURA VALUES "
+    
+        SQL = "INSERT FORMA_PAGO VALUES "
+                + "('"+idpago+"',"
+                + "'"+formapagoFact.getSelectedItem()+"')";
+        con.Insertar(SQL);
+     }flag=1;
+       System.out.println("codigo"+codigo+"Cant:"+cant+"idpago:"+idpago+"no:"+nofactura.getText()+"id"+buscarIdFactura.getText());
+         SQL = " INSERT FACTURA VALUES "
                 + "('"+buscarIdFactura.getText()+"',"
                 + "'"+idpago+"'," 
                 + "'"+nofactura.getText()+"',"
                 + "'"+codigo+"',"
                 + "'"+cant+"')";
+     
         con.Insertar(SQL);
+   
    }
     public void eliminarFactura(){
         int folioFact = Integer.parseInt( JOptionPane.showInputDialog(
@@ -816,11 +825,7 @@ public class Factura extends javax.swing.JInternalFrame {
     private void jButton10ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton10ActionPerformed
        ///LLENA EL LA TABLAFORMADE PAGO
        
-     
-        SQL = "INSERT FORMA_PAGO VALUES "
-                + "('"+idpago+"',"
-                + "'"+formapagoFact.getSelectedItem()+"')";
-        con.Insertar(SQL);
+     flag=0;
     }//GEN-LAST:event_jButton10ActionPerformed
 
 
