@@ -101,26 +101,21 @@ public class Factura extends javax.swing.JInternalFrame {
         
    }
    
-   public void Insertar(){
-      SQL = "SELECT ID_PERSONA FROM PERSONA";
-        s = "ID_PERSONA";
+   public void Insertar(String codigo, String cant){
+      SQL = "SELECT ID_PAGO FROM FORMA_PAGO";
+        s = "ID_PAGO";
      try {
          idpago = con.Aleatorio(SQL,s);
      } catch (SQLException ex) {
          Logger.getLogger(Factura.class.getName()).log(Level.SEVERE, null, ex);
      }
-        SQL = "INSERT FORMA_PAGO VALUES "
-                + "('"+idpago+"',"
-                + "'"+formapagoFact.getSelectedItem()+"')";
-        con.Insertar(SQL);
        
-         SQL = "INSERT ENCABEZADO_FACTURA VALUES "
+         SQL = "INSERT FACTURA VALUES "
                 + "('"+buscarIdFactura.getText()+"',"
-                + "'"+formapagoFact.getSelectedItem()+"'," 
-              //  + "'"+nofactura.getText()+"',"
-               // + "'"+estatusEncabezado.getText()+"',"
-             //   + "'"+timbradoEncabezado.getText()+"',"
-                + "'"+nofactura.getText()+"')";
+                + "'"+idpago+"'," 
+                + "'"+nofactura.getText()+"',"
+                + "'"+codigo+"',"
+                + "'"+cant+"')";
         con.Insertar(SQL);
    }
     public void eliminarFactura(){
@@ -170,6 +165,7 @@ public class Factura extends javax.swing.JInternalFrame {
              subtotal=subtotal+x;
              totalFactura.setText("$"+total);
              subtotalFactura.setText("$"+subtotal);
+             Insertar(codigo,cant);
            }
         }catch(Exception e ){
             }
@@ -818,7 +814,13 @@ public class Factura extends javax.swing.JInternalFrame {
     }//GEN-LAST:event_nofacturaActionPerformed
 
     private void jButton10ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton10ActionPerformed
-        Insertar();
+       ///LLENA EL LA TABLAFORMADE PAGO
+       
+     
+        SQL = "INSERT FORMA_PAGO VALUES "
+                + "('"+idpago+"',"
+                + "'"+formapagoFact.getSelectedItem()+"')";
+        con.Insertar(SQL);
     }//GEN-LAST:event_jButton10ActionPerformed
 
 
