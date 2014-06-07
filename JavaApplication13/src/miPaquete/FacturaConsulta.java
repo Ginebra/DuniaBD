@@ -117,17 +117,16 @@ public class FacturaConsulta extends javax.swing.JFrame {
             r = con.generar(SQL);
             while(r.next()){   
              /////////////////////////////////////////////////////////////////
-             x = (Integer.parseInt(r.getString("CANTIDAD"))*Double.parseDouble(r.getString("PRECIO")));
-             descue = ((Double.parseDouble(r.getString(19))*x))/100;
-             ivas = (Double.parseDouble(r.getString(11))*(x))/100;
-             sub = (x-descue)+ivas;
-             importe = Double.toString(sub);               
              
-             calcula = (Double.parseDouble(importe));
+             descue = ((Double.parseDouble(r.getString(19))*Double.parseDouble(r.getString("PRECIO"))))/100;
+             ivas = (((Double.parseDouble(r.getString(11)))/100)+1)*(Double.parseDouble(r.getString("PRECIO")));
              
-             
-             total = total + calcula;
+             sub = (ivas-descue)*(Double.parseDouble(r.getString("CANTIDAD")));
+             x = (Double.parseDouble(r.getString("CANTIDAD")))*ivas;
+             total = total + sub;
              subtotal = subtotal + x;
+             importe = Double.toString(sub);
+         
            /////////////////////////////////////////////////////////////////
                 
                 fila[0] = r.getString("CODIGO");
