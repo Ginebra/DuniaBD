@@ -6,6 +6,9 @@
 
 package miPaquete;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  *
  * @author neko
@@ -18,6 +21,13 @@ public class Principal extends javax.swing.JFrame {
     public Principal() {
         initComponents();
         Escritorio.setSize(899,372);
+    }
+    
+    void revisarTimbre() throws InterruptedException{
+        Conexiones conn = new Conexiones();
+        System.out.println("\nREVISANDO EL STATUS TIMBRE\n");
+        conn.Timbre();
+        //Thread.sleep(5000);
     }
 
     /**
@@ -113,6 +123,11 @@ public class Principal extends javax.swing.JFrame {
         Escritorio.removeAll();
         Escritorio.add(person);
         person.setVisible(true);
+        try {
+            revisarTimbre();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(Principal.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed

@@ -114,6 +114,7 @@ Conexiones con = new Conexiones();
         con.Insertar(SQL);
         
         limpiar();
+        
     }
     @SuppressWarnings("unchecked")
     
@@ -160,9 +161,11 @@ Conexiones con = new Conexiones();
                     + "WHERE ID_IVA = "+idiva;
           con.Insertar(SQL);
           
+          JOptionPane.showMessageDialog(null, "Datos Modificados");
+          
     }catch(SQLException e ){
         
-    } GenerarTabla();
+    } GenerarTabla(); limpiar(); promocionProducto.requestFocus();
     }
 
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -236,6 +239,24 @@ Conexiones con = new Conexiones();
 
         jLabel4.setText("CANTIDAD(IVA)");
 
+        codigoProducto.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                codigoProductoKeyTyped(evt);
+            }
+        });
+
+        precioProducto.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                precioProductoKeyTyped(evt);
+            }
+        });
+
+        ivaProducto.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                ivaProductoKeyTyped(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -288,6 +309,33 @@ Conexiones con = new Conexiones();
         PROMOCION.setText("PROMOCION");
 
         jLabel8.setText("CANTIDAD");
+
+        inicioProducto.setText("dd/mm/yyyy");
+        inicioProducto.setToolTipText("");
+        inicioProducto.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                inicioProductoKeyTyped(evt);
+            }
+        });
+
+        cantidadProducto.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                cantidadProductoKeyTyped(evt);
+            }
+        });
+
+        finProducto.setText("dd/mm/yyyy");
+        finProducto.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                finProductoKeyTyped(evt);
+            }
+        });
+
+        promocionProducto.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                promocionProductoKeyTyped(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -438,7 +486,7 @@ public void GenerarTabla() {
       try{        
            String titulos[]={"CODIGO", "PRECIO","DESCRIPCION","IVA%",
                "FECHA-INICIO","FECHA-FIN","DESCUENTO%", "PROMOCION"};
-            m=new DefaultTableModel(null, titulos);
+            m = new DefaultTableModel(null, titulos);
             String fila[]=new String[17];
             
             SQL="  select * From PRODUCTO INNER JOIN PRODUCTO_DESCUENTO "
@@ -486,10 +534,30 @@ public void GenerarTabla() {
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void btnGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGuardarActionPerformed
-      if(flag == 1){  
+      if(     codigoProducto.getText().equals("") || 
+                precioProducto.getText().equals("") ||
+                descripcionProducto.getText().equals("") ||
+                ivaProducto.getText().equals("") ||
+                inicioProducto.getText().equals("") ||
+                finProducto.getText().equals("") ||
+                cantidadProducto.getText().equals("") ||
+                promocionProducto.getText().equals(""))
+        {
+        JOptionPane.showMessageDialog(null, "FALTAN DATOS..!!!");
+        }
+        else{
+        int f1 = Integer.parseInt(inicioProducto.getText().substring(6));
+        int f2 = Integer.parseInt(finProducto.getText().substring(6));
+        System.out.println("f1= "+f1+"\nf2= "+f2);
+        if(f2 - f1 < 10){
+        if(flag == 1){  
           try {
               modificar();
+              btnGuardar.setText("modificar");
+              JOptionPane.showMessageDialog(null, "Datos Modificados");
+              
           } catch (SQLException ex) {
+              JOptionPane.showMessageDialog(null, "Error al modificar");
               System.out.println("error MODIFICAR");
           }
             
@@ -499,10 +567,17 @@ public void GenerarTabla() {
             try {
                 insertar();
                 GenerarTabla();
+                JOptionPane.showMessageDialog(null, "Datos insertados");
             } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(null, "Error al insertar");
                 System.out.println("ERROR INSERTAR");
             }
         }
+        }
+        else{
+            JOptionPane.showMessageDialog(null, "FECHAS NO VALIDAS");
+        }
+      }
     }//GEN-LAST:event_btnGuardarActionPerformed
 
     private void tablaProductoMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tablaProductoMouseClicked
@@ -511,22 +586,22 @@ public void GenerarTabla() {
            int fila=tablaProducto.getSelectedRow();
            try{
                habilitar();
-               SQL = "SELECT  CODIGO, PRECIO, DESCRIPCION_PRODUCTO,IVA.CANTIDAD,"
-                  + "FECHA_INICIO, FECHA_FIN,\n" +
-                  "DESCUENTO.CANTIDAD,  DESCRIPCION_DESCUENTO\n" +
-                  "FROM DESCUENTO INNER JOIN IVA\n" +
-                  "ON ID_DESCUENTO !=-1 INNER JOIN PRODUCTO ON CODIGO="+tablaProducto.getValueAt(fila,0);
+               SQL ="select * From PRODUCTO INNER JOIN PRODUCTO_DESCUENTO "
+                    + "ON PRODUCTO_DESCUENTO.CODIGO = PRODUCTO.CODIGO INNER JOIN DESCUENTO"
+                    + " ON PRODUCTO_DESCUENTO.ID_DESCUENTO= DESCUENTO.ID_DESCUENTO INNER JOIN PRODUCTO_IVA"
+                    + " ON PRODUCTO_IVA.CODIGO = PRODUCTO.CODIGO INNER JOIN IVA "
+                    + "ON PRODUCTO_IVA.ID_IVA= IVA.ID_IVA WHERE PRODUCTO.CODIGO="+tablaProducto.getValueAt(fila,0);
                r = con.generar(SQL);
             
             while(r.next()){
                 codigoProducto.setText(r.getString("CODIGO"));
                 precioProducto.setText(r.getString("PRECIO"));
                 descripcionProducto.setText(r.getString("DESCRIPCION_PRODUCTO"));
-                ivaProducto.setText(r.getString(4));
-                inicioProducto.setText(r.getString(5));
-                finProducto.setText(r.getString(6));
-                cantidadProducto.setText(r.getString(7));
-                promocionProducto.setText(r.getString(8));
+                ivaProducto.setText(r.getString(13));
+                inicioProducto.setText(r.getString(7));
+                finProducto.setText(r.getString(8));
+                cantidadProducto.setText(r.getString(10));
+                promocionProducto.setText(r.getString(9));
                 
             }
            }catch(Exception e){
@@ -561,6 +636,13 @@ public void GenerarTabla() {
         catch(Exception e){
             
         } 
+        SQL = "delete FACTURA where codigo = ";
+        con.Eliminar(id,SQL);
+        SQL = "delete PRODUCTO_IVA where CODIGO = ";
+        con.Eliminar(id,SQL);
+        SQL = "delete PRODUCTO_DESCUENTO where CODIGO = ";
+        con.Eliminar(id,SQL);
+                
         SQL = "DELETE PRODUCTO_IVA WHERE ID_IVA =";
         con.Eliminar(idiva,SQL);
         SQL = "DELETE PRODUCTO_DESCUENTO WHERE ID_DESCUENTO=";
@@ -574,8 +656,83 @@ public void GenerarTabla() {
         
         limpiar();
         GenerarTabla();
+        JOptionPane.showMessageDialog(null, "Datos ELIMINADOS");
         
     }//GEN-LAST:event_jButton3ActionPerformed
+
+    private void codigoProductoKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_codigoProductoKeyTyped
+        char c = evt.getKeyChar();
+        if(c < '0' || c > '9'){
+            evt.consume();
+        }
+        int tamaño = codigoProducto.getText().length();
+            if(tamaño == 4)
+                precioProducto.requestFocus();
+    }//GEN-LAST:event_codigoProductoKeyTyped
+
+    private void precioProductoKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_precioProductoKeyTyped
+        char c = evt.getKeyChar();
+        if(c < '0' || c > '9'){
+            evt.consume();
+        }
+        int tamaño = precioProducto.getText().length();
+            if(tamaño == 5)
+                descripcionProducto.requestFocus();
+    }//GEN-LAST:event_precioProductoKeyTyped
+
+    private void ivaProductoKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_ivaProductoKeyTyped
+        char c = evt.getKeyChar();
+        if(c < '0' || c > '9'){
+            evt.consume();
+        }
+        int tamaño = ivaProducto.getText().length();
+            if(tamaño == 1)
+                inicioProducto.requestFocus();
+    }//GEN-LAST:event_ivaProductoKeyTyped
+
+    private void cantidadProductoKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_cantidadProductoKeyTyped
+        char c = evt.getKeyChar();
+        if(c < '0' || c > '9'){
+            evt.consume();
+        }
+        int tamaño = cantidadProducto.getText().length();
+            if(tamaño == 2)
+                promocionProducto.requestFocus();
+    }//GEN-LAST:event_cantidadProductoKeyTyped
+
+    private void promocionProductoKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_promocionProductoKeyTyped
+
+    }//GEN-LAST:event_promocionProductoKeyTyped
+
+    private void inicioProductoKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_inicioProductoKeyTyped
+        char c = evt.getKeyChar();
+        if(c < '0' || c > '9'){
+            evt.consume();
+        }
+        int tamaño = inicioProducto.getText().length();
+            if(tamaño == 2 || tamaño == 5){
+            inicioProducto.setText(inicioProducto.getText()+"/");
+        }
+        
+        if(tamaño == 9){
+            finProducto.requestFocus();
+        }
+    }//GEN-LAST:event_inicioProductoKeyTyped
+
+    private void finProductoKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_finProductoKeyTyped
+        char c = evt.getKeyChar();
+        if(c < '0' || c > '9'){
+            evt.consume();
+        }
+        int tamaño = finProducto.getText().length();
+            if(tamaño == 2 || tamaño == 5){
+            finProducto.setText(finProducto.getText()+"/");
+        }
+        
+        if(tamaño == 9){
+            cantidadProducto.requestFocus();
+        }
+    }//GEN-LAST:event_finProductoKeyTyped
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

@@ -6,6 +6,7 @@
 
 package miPaquete;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -22,6 +23,7 @@ public class Persona extends javax.swing.JInternalFrame {
     Conexiones con = new Conexiones();
     Connection conect;
     public int idpersona, idtelefono, idpagina, idlogotipo, iddomicilio;
+    public int idpago, folio, codigo, cantidad;
     
     public Persona() {
         initComponents();
@@ -109,7 +111,27 @@ public class Persona extends javax.swing.JInternalFrame {
        
    
     public void insertar() throws SQLException{
-         
+        if(nombrePersona.getText().equals("") || 
+            paternoPersona.getText().equals("") ||
+            maternoPersona.getText().equals("") ||
+            estadoPersona.getText().equals("") ||
+            ciudadPersona.getText().equals("") ||
+            callePersona.getText().equals("") ||
+            coloniaPersona.getText().equals("") ||
+            interiorPersona.getText().equals("") ||
+            externaPersona.getText().equals("") ||
+            postalPersona.getText().equals("") ||
+            numeroPersona.getText().equals("") ||
+            dominioPersona.getText().equals("") ||
+            localizacionPersona.getText().equals("") ||
+            regimenPersona.getText().equals("") ||
+            rsocialPersona.getText().equals("") ||
+            rfcPersona.getText().equals(""))
+        {
+            JOptionPane.showMessageDialog(null, "FALTA LLENAR DATOS");   
+        }
+        else{
+
         String SQL;
         String Query,s;
         
@@ -211,21 +233,15 @@ public class Persona extends javax.swing.JInternalFrame {
                 + ""+idPersona.getText());
         
         limpiar();
-
+      }
     }
     
     public void buscar () throws SQLException{
+        int found = 0 ;
         int idbuscar = Integer.parseInt( JOptionPane.showInputDialog(
         null,"Introduzca el ID a buscar",
         "BUSCADOR",
         JOptionPane.QUESTION_MESSAGE) );
-        
-        //////////////////////////////////////////
-        flag = 1;
-        btnActualizar.setVisible(true);
-        btnActualizar.setText("MODIFICAR");
-        habilitar();
-        //////////////////////////////////////////
         
         try{
         ResultSet resultado;
@@ -289,6 +305,17 @@ public class Persona extends javax.swing.JInternalFrame {
              idpagina = Integer.parseInt(resultado.getString("ID_PAGINA"));
              idlogotipo = Integer.parseInt(resultado.getString("ID_LOGOTIPO"));
              iddomicilio = Integer.parseInt(resultado.getString("ID_DOMICILIO"));
+             found = 1;
+         }
+         
+         if(found == 0){
+             JOptionPane.showMessageDialog(null, "NO EXISTE ID..!!!");
+         }
+         else{
+            flag = 1;
+            btnActualizar.setVisible(true);
+            btnActualizar.setText("MODIFICAR");
+            habilitar();
          }
         
         resultado.close();
@@ -333,12 +360,13 @@ public class Persona extends javax.swing.JInternalFrame {
                 + "ESTADO = '"+estadoPersona.getText()+"' "
                 + "WHERE ID_DOMICILIO = "+iddomicilio+"";
         mod.Insertar(SQL);
-
+        JOptionPane.showMessageDialog(null, "Datos modificados Exitosamente");
     }
     
     
     public void eliminar(){
-         int ideliminar = Integer.parseInt( JOptionPane.showInputDialog(
+        int found=0;
+        int ideliminar = Integer.parseInt( JOptionPane.showInputDialog(
         null,"Introduzca el ID a ELIMINAR",
         "BUSCADOR",
         JOptionPane.QUESTION_MESSAGE) );
@@ -367,23 +395,29 @@ public class Persona extends javax.swing.JInternalFrame {
                 + "WHERE PERSONA.ID_PERSONA = "+ideliminar+"";
         resultado = con.Consultar(ideliminar,SQL);
         
-         while (resultado.next()) {
+         while (resultado.next()){
              //ASIGNACION DE ID's
              idpersona = Integer.parseInt(resultado.getString("ID_PERSONA"));
              idtelefono = Integer.parseInt(resultado.getString("ID_TELEFONO"));
              idpagina = Integer.parseInt(resultado.getString("ID_PAGINA"));
              idlogotipo = Integer.parseInt(resultado.getString("ID_LOGOTIPO"));
              iddomicilio = Integer.parseInt(resultado.getString("ID_DOMICILIO"));
-         }
-        
-        resultado.close();
+             found = 1;
+         }    
+         
+         resultado.close();
         }
         catch (SQLException e) {
             System.out.println("Error en Consultar para Eliminar");
             JOptionPane.showMessageDialog(null, "No hay datos");
         }
-       
+        
+        if(found == 0){
+            JOptionPane.showMessageDialog(null, "NO EXISTE ID..!!!");
+        }
+        else{
         String SQL;
+        
         SQL = "DELETE PERSONA_DOMICILIO WHERE ID_PERSONA =";
         con.Eliminar(idpersona,SQL);
         SQL = "DELETE PERSONA_LOGOTIPO WHERE ID_PERSONA =";
@@ -391,6 +425,9 @@ public class Persona extends javax.swing.JInternalFrame {
         SQL = "DELETE PERSONA_PAGINA WHERE ID_PERSONA =";
         con.Eliminar(idpersona,SQL);
         SQL = "DELETE PERSONA_TELEFONO WHERE ID_PERSONA =";
+        con.Eliminar(idpersona,SQL);
+        
+        SQL = "DELETE FACTURA WHERE ID_PERSONA =";
         con.Eliminar(idpersona,SQL);
         
         SQL = "DELETE PERSONA WHERE ID_PERSONA =";
@@ -404,8 +441,10 @@ public class Persona extends javax.swing.JInternalFrame {
         SQL = "DELETE DOMICILIO WHERE ID_DOMICILIO = ";
         con.Eliminar(iddomicilio,SQL);   
         
+        
         JOptionPane.showMessageDialog(null, "Eliminacion Exitosa");
         limpiar();
+        }
        }
     
 
@@ -474,6 +513,24 @@ public class Persona extends javax.swing.JInternalFrame {
         jLabel19.setText("NUMERO EXT");
 
         jLabel20.setText("CODIGO POSTAL");
+
+        interiorPersona.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                interiorPersonaKeyTyped(evt);
+            }
+        });
+
+        externaPersona.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                externaPersonaKeyTyped(evt);
+            }
+        });
+
+        postalPersona.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                postalPersonaKeyTyped(evt);
+            }
+        });
 
         jLabel14.setText("ESTADO");
 
@@ -608,6 +665,11 @@ public class Persona extends javax.swing.JInternalFrame {
         jLabel13.setText("DOMINIO");
 
         numeroPersona.setText("12345678910");
+        numeroPersona.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                numeroPersonaKeyTyped(evt);
+            }
+        });
 
         descripcionPersona.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "casa", "oficina", "fax", "celular" }));
 
@@ -834,6 +896,7 @@ public class Persona extends javax.swing.JInternalFrame {
     }//GEN-LAST:event_jButton3ActionPerformed
 
     private void btnActualizarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnActualizarActionPerformed
+        
         if(flag == 1){  
             modificar();
         }
@@ -842,10 +905,38 @@ public class Persona extends javax.swing.JInternalFrame {
             try {
                 insertar();
             } catch (SQLException ex) {
-                System.out.println("ERROR INSERTAR");
+                JOptionPane.showMessageDialog(null, "Error, verifica tus datos");
             }
         }
     }//GEN-LAST:event_btnActualizarActionPerformed
+
+    private void interiorPersonaKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_interiorPersonaKeyTyped
+        char c = evt.getKeyChar();
+        if(c < '0' || c > '9'){
+            evt.consume();
+        }
+    }//GEN-LAST:event_interiorPersonaKeyTyped
+
+    private void externaPersonaKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_externaPersonaKeyTyped
+        char c = evt.getKeyChar();
+        if(c < '0' || c > '9'){
+            evt.consume();
+        }
+    }//GEN-LAST:event_externaPersonaKeyTyped
+
+    private void postalPersonaKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_postalPersonaKeyTyped
+        char c = evt.getKeyChar();
+        if(c < '0' || c > '9'){
+            evt.consume();
+        }
+    }//GEN-LAST:event_postalPersonaKeyTyped
+
+    private void numeroPersonaKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_numeroPersonaKeyTyped
+        char c = evt.getKeyChar();
+        if(c < '0' || c > '9'){
+            evt.consume();
+        }
+    }//GEN-LAST:event_numeroPersonaKeyTyped
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

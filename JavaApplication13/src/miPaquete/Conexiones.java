@@ -39,7 +39,6 @@ public class Conexiones {
             }
             catch (SQLException e) {
                 System.out.println("Error en generar");
-               
             }
         return null;
       }
@@ -69,6 +68,17 @@ public class Conexiones {
         }catch (SQLException e){
             System.out.println("Error en Insertar");
         }
+      }
+      
+      public void Modifica(String SQL) throws SQLException{
+          //String SQL = "UPDATE PERSONA set nombre = 'NEKO' where ID_PERSONA = 333";
+          try {
+              Statement stmt = conect.createStatement();
+              stmt.executeUpdate(SQL);
+              System.out.println("Modificacion exitosa: "+SQL);
+          }catch (SQLException e){
+              System.out.println("Error en Modificar");
+          }
       }
       
       public void Eliminar(int id, String SQL){         
@@ -106,37 +116,39 @@ public class Conexiones {
           ResultSet resultado;
           resultado = estado.executeQuery(sql);
           
-          while(resultado.next() ){
+          while(resultado.next()){
               folio++;
           }
           return folio;
       }
       
-      
-      
-      
-      public void Timbre(){
+      public boolean Timbre(){
+          String SQL = "UPDATE ENCABEZADO_FACTURA set TIMBRADO = 1 where FOLIO = ";
+          String SQL2 = "UPDATE ENCABEZADO_FACTURA set TIMBRADO = 0 where FOLIO = ";
           try {       
-            Statement estado = conect.createStatement();
+            Statement est = conect.createStatement();
             ResultSet resultado;
-            resultado = estado.executeQuery("SELECT * FROM persona");
+            resultado = est.executeQuery("SELECT ESTATUS, FOLIO FROM ENCABEZADO_FACTURA");
  
             while (resultado.next()) {
-                System.out.println(
-                                resultado.getString("NOMBRE") 
-                       + "\t" + resultado.getString("APELLIDO_MATERNO")
-                       + "\t" + resultado.getString("APELLIDO_PATERNO")
-                       + "\t" + resultado.getString("RAZON_SOCIAL")
-                       + "\t" + resultado.getString("RDF")
-                       + "\t" + resultado.getString("REGIMEN_FISCAL")
-                       + "\t" + resultado.getString("ID_PERSONA")
-                       + "\t" + resultado.getString("TIPO_PERSONA")+"\n");
+                String folioTimbre = resultado.getString("FOLIO");
+                
+                if(resultado.getString("ESTATUS").equalsIgnoreCase("1")){
+                    Modifica(SQL+folioTimbre); //coloca timbre en 1 si estatus = 1
+                }
+                else{
+                    Modifica(SQL2+folioTimbre); //coloca timbre en 0 si estatus = 0
+                }
             }
+            System.out.println("Saliendo de revizar timbrado");
             resultado.close();
-            estado.close();
+            est.close();
+            return true;
             }
             catch (SQLException e) {
                 System.out.println("Error en Consultar");
             }
+          return false;
       }
+
 }

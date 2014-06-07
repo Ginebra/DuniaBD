@@ -8,9 +8,12 @@ package miPaquete;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+import javax.swing.WindowConstants;
 
 /**
  *
@@ -22,11 +25,12 @@ public class encabezado extends javax.swing.JFrame {
  int aux;
  String numero, fecha, fechaEn, Query,s;
  Factura obj=new Factura();
-    
+ 
  public encabezado() {
      initComponents();
+     this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         folioEncabezado.setEditable(false);
-        fechaEncabezado.requestFocus();
+        lugarEncabezado.requestFocus();
          Query = "SELECT FOLIO FROM ENCABEZADO_FACTURA";
          s = "FOLIO";
      try {
@@ -37,19 +41,22 @@ public class encabezado extends javax.swing.JFrame {
      } catch (SQLException ex) {
          Logger.getLogger(encabezado.class.getName()).log(Level.SEVERE, null, ex);
      } 
+             Date fecha=new Date(); 
+             SimpleDateFormat sdf=new SimpleDateFormat("dd/MM/yyyy"); 
+             fechaEncabezado.setText(sdf.format(fecha)); 
     }
     
     public void agregar(){
-       
+       int estatus = estatusEncabezado.isSelected() ? 1 : 0;
+       int timbrado = 0;
        String SQL = "INSERT ENCABEZADO_FACTURA VALUES "
                 + "("+folioEncabezado.getText()+","
                 + "'"+fechaEncabezado.getText()+"',"
                 + "'"+lugarEncabezado.getText()+"',"
-                + "'"+estatusEncabezado.getText()+"',"
-                + "'"+timbradoEncabezado.getText()+"',"
+                + "'"+estatus+"',"
+                + "'"+timbrado+"',"
                 + "'"+descuentoEncabezado.getText()+"')";
         con.Insertar(SQL);
-        
      }
     
     @SuppressWarnings("unchecked")
@@ -65,10 +72,10 @@ public class encabezado extends javax.swing.JFrame {
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
         lugarEncabezado = new javax.swing.JTextField();
-        estatusEncabezado = new javax.swing.JTextField();
-        timbradoEncabezado = new javax.swing.JTextField();
         jButton1 = new javax.swing.JButton();
         descuentoEncabezado = new javax.swing.JTextField();
+        estatusEncabezado = new javax.swing.JCheckBox();
+        timbradoEncabezado = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -79,6 +86,11 @@ public class encabezado extends javax.swing.JFrame {
         fechaEncabezado.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 fechaEncabezadoActionPerformed(evt);
+            }
+        });
+        fechaEncabezado.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                fechaEncabezadoKeyTyped(evt);
             }
         });
 
@@ -96,18 +108,6 @@ public class encabezado extends javax.swing.JFrame {
             }
         });
 
-        estatusEncabezado.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                estatusEncabezadoActionPerformed(evt);
-            }
-        });
-
-        timbradoEncabezado.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                timbradoEncabezadoActionPerformed(evt);
-            }
-        });
-
         jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/miPaquete/data-apply-icon.png"))); // NOI18N
         jButton1.setText("Agregar");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
@@ -121,6 +121,15 @@ public class encabezado extends javax.swing.JFrame {
                 descuentoEncabezadoActionPerformed(evt);
             }
         });
+        descuentoEncabezado.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                descuentoEncabezadoKeyTyped(evt);
+            }
+        });
+
+        estatusEncabezado.setText("ACTIVO");
+
+        timbradoEncabezado.setText("TIMBRADO");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -128,15 +137,7 @@ public class encabezado extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(49, 49, 49)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel2)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(fechaEncabezado))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel1)
-                        .addGap(18, 18, 18)
-                        .addComponent(folioEncabezado, javax.swing.GroupLayout.PREFERRED_SIZE, 88, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel3)
@@ -146,12 +147,21 @@ public class encabezado extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(descuentoEncabezado, javax.swing.GroupLayout.PREFERRED_SIZE, 157, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(timbradoEncabezado, javax.swing.GroupLayout.PREFERRED_SIZE, 157, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(estatusEncabezado, javax.swing.GroupLayout.PREFERRED_SIZE, 157, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(lugarEncabezado, javax.swing.GroupLayout.PREFERRED_SIZE, 157, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(layout.createSequentialGroup()
                                 .addGap(18, 18, 18)
-                                .addComponent(jButton1)))))
+                                .addComponent(jButton1))
+                            .addComponent(estatusEncabezado)
+                            .addComponent(timbradoEncabezado)))
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                        .addGroup(layout.createSequentialGroup()
+                            .addComponent(jLabel2)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                            .addComponent(fechaEncabezado))
+                        .addGroup(layout.createSequentialGroup()
+                            .addComponent(jLabel1)
+                            .addGap(18, 18, 18)
+                            .addComponent(folioEncabezado, javax.swing.GroupLayout.PREFERRED_SIZE, 88, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap(109, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -172,18 +182,18 @@ public class encabezado extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel4)
-                    .addComponent(estatusEncabezado, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(estatusEncabezado))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel5)
-                    .addComponent(timbradoEncabezado, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(6, 6, 6)
+                    .addComponent(timbradoEncabezado))
+                .addGap(4, 4, 4)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel6)
                     .addComponent(descuentoEncabezado, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addComponent(jButton1)
-                .addContainerGap(34, Short.MAX_VALUE))
+                .addContainerGap(40, Short.MAX_VALUE))
         );
 
         pack();
@@ -197,14 +207,6 @@ public class encabezado extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_lugarEncabezadoActionPerformed
 
-    private void estatusEncabezadoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_estatusEncabezadoActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_estatusEncabezadoActionPerformed
-
-    private void timbradoEncabezadoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_timbradoEncabezadoActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_timbradoEncabezadoActionPerformed
-
     private void descuentoEncabezadoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_descuentoEncabezadoActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_descuentoEncabezadoActionPerformed
@@ -213,6 +215,28 @@ public class encabezado extends javax.swing.JFrame {
         agregar();
         dispose(); 
     }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void descuentoEncabezadoKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_descuentoEncabezadoKeyTyped
+        char c = evt.getKeyChar();
+        if(c < '0' || c > '9'){
+            evt.consume();
+        }
+    }//GEN-LAST:event_descuentoEncabezadoKeyTyped
+
+    private void fechaEncabezadoKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_fechaEncabezadoKeyTyped
+        char c = evt.getKeyChar();
+        if(c < '0' || c > '9'){
+            evt.consume();
+        }
+        int tamaño = fechaEncabezado.getText().length();
+            if(tamaño == 2 || tamaño == 5){
+            fechaEncabezado.setText(fechaEncabezado.getText()+"/");
+        }
+        
+            if(tamaño == 9){
+                lugarEncabezado.requestFocus();
+            }
+    }//GEN-LAST:event_fechaEncabezadoKeyTyped
 
     /**
      * @param args the command line arguments
@@ -253,7 +277,7 @@ public class encabezado extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField descuentoEncabezado;
-    public javax.swing.JTextField estatusEncabezado;
+    private javax.swing.JCheckBox estatusEncabezado;
     public javax.swing.JTextField fechaEncabezado;
     public javax.swing.JTextField folioEncabezado;
     private javax.swing.JButton jButton1;
@@ -264,6 +288,6 @@ public class encabezado extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JTextField lugarEncabezado;
-    private javax.swing.JTextField timbradoEncabezado;
+    private javax.swing.JCheckBox timbradoEncabezado;
     // End of variables declaration//GEN-END:variables
 }

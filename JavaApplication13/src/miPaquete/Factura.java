@@ -15,17 +15,18 @@ import java.text.MessageFormat;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
 
 public class Factura extends javax.swing.JInternalFrame {
     Conexiones con = new Conexiones();  
     ResultSet r;
-    DefaultTableModel m ;
+    DefaultTableModel m, mtabla;
     String SQL, fila[]=new String[17],s, importe,
            codigo, cant,precio, iva, descripcion,descuento;
-    int c=1, idBuscar, band=1,idpago,canti=0, flag=0;
-    double calcula=0, x=0, total, descue, ivas, subtotal, sub, sub1;
+    int c=1, ci=1, idBuscar, band=1,idpago,canti=0, flag=0;
+    double calcula=0, x=0, total, descue, ivas, subtotal, sub, totala, sindes;
 
     public Factura() {
         initComponents();
@@ -42,42 +43,6 @@ public class Factura extends javax.swing.JInternalFrame {
         nofactura.setText("");
         buscarIdFactura.requestFocus();
     }
-    public void buscarUsuario() {
-        apellidoFactura.setEditable(false);
-        nombreFactura.setEditable(false);
-        rfcFactura.setEditable(false);
-     try{
-        int id_buscar=Integer.parseInt(buscarIdFactura.getText());
-          SQL = "SELECT * FROM PERSONA "
-                + "INNER JOIN PERSONA_DOMICILIO "
-                + "ON PERSONA_DOMICILIO.ID_PERSONA = PERSONA.ID_PERSONA "
-                + "INNER JOIN DOMICILIO "
-                + "ON PERSONA_DOMICILIO.ID_DOMICILIO = DOMICILIO.ID_DOMICILIO "
-                + "INNER JOIN PERSONA_TELEFONO "
-                + "ON PERSONA_TELEFONO.ID_PERSONA = PERSONA.ID_PERSONA "
-                + "INNER JOIN TELEFONO "
-                + "ON PERSONA_TELEFONO.ID_TELEFONO = TELEFONO.ID_TELEFONO "
-                + "INNER JOIN PERSONA_PAGINA "
-                + "ON PERSONA_PAGINA.ID_PERSONA = PERSONA.ID_PERSONA "
-                + "INNER JOIN PAGINA_WEB "
-                + "ON PERSONA_PAGINA.ID_PAGINA = PAGINA_WEB.ID_PAGINA "
-                + "INNER JOIN PERSONA_LOGOTIPO "
-                + "ON PERSONA_LOGOTIPO.ID_PERSONA = PERSONA.ID_PERSONA "
-                + "INNER JOIN LOGOTIPO "
-                + "ON PERSONA_LOGOTIPO.ID_LOGOTIPO = LOGOTIPO.ID_LOGOTIPO "
-                + "WHERE PERSONA.ID_PERSONA = "+id_buscar+"";
-        r = con.Consultar(id_buscar,SQL);
-        
-        while(r.next()){
-                nombreFactura.setText(r.getString("NOMBRE"));
-                apellidoFactura.setText(r.getString("APELLIDO_PATERNO"));
-                rfcFactura.setText(r.getString("RFC"));
-                direccionFactura.setText(r.getString("RFC"));
-           }
-        }catch(SQLException e){
-              System.out.println("error");
-        }
-    }
     
    public void buscarFolio(){
         int folio = Integer.parseInt( JOptionPane.showInputDialog(
@@ -90,8 +55,12 @@ public class Factura extends javax.swing.JInternalFrame {
            
            while(r.next()){
                jPanel1.setVisible(true);
-               fechaFact.setText(r.getString("FECHA"));
+                fechaFact.setText(r.getString("FECHA"));
                 nofactura.setText(r.getString("FOLIO"));
+                fechaFact.setEditable(false);
+                nofactura.setEditable(false);
+                totalFactura.setEditable(false);
+                subtotalFactura.setEditable(false);
                 JOptionPane.showMessageDialog(null, "Folio encontrado");
                }
         }
@@ -116,7 +85,7 @@ public class Factura extends javax.swing.JInternalFrame {
                 + "'"+formapagoFact.getSelectedItem()+"')";
         con.Insertar(SQL);
      }flag=1;
-       System.out.println("codigo"+codigo+"Cant:"+cant+"idpago:"+idpago+"no:"+nofactura.getText()+"id"+buscarIdFactura.getText());
+       //System.out.println("codigo"+codigo+"Cant:"+cant+"idpago:"+idpago+"no:"+nofactura.getText()+"id"+buscarIdFactura.getText());
          SQL = " INSERT FACTURA VALUES "
                 + "('"+buscarIdFactura.getText()+"',"
                 + "'"+idpago+"'," 
@@ -132,54 +101,77 @@ public class Factura extends javax.swing.JInternalFrame {
         null,"Introduzca el No.Factura",
         "BUSCADOR",JOptionPane.QUESTION_MESSAGE) );
         try{
-           SQL = "delete from ENCABEZADO_FACTURA WHERE FOLIO=";
-           con.Eliminar(folioFact,SQL);
-           
-               JOptionPane.showMessageDialog(null, "Factura eliminada");
+            SQL = "delete from FACTURA WHERE FOLIO=";
+            con.Eliminar(folioFact,SQL);
+            SQL = "delete from ENCABEZADO_FACTURA WHERE FOLIO=";
+            con.Eliminar(folioFact,SQL);
+            JOptionPane.showMessageDialog(null, "Factura eliminada");
         }
         catch(Exception e){
             JOptionPane.showMessageDialog(null, "Folio NO encontrado");
-            
             }
         limpiar();
    }
          
+   
     public void seleccionarProducto(){
         int filaselect=tablaproducto.getSelectedRow();
      try{
          if(filaselect==-1){
             JOptionPane.showMessageDialog(null, "Seleccione un producto");
+            calcula=0; subtotal=0;
          }else{
-             m=(DefaultTableModel)tablaproducto.getModel();
-             codigo=tablaproducto.getValueAt(filaselect,0).toString();
-             precio=tablaproducto.getValueAt(filaselect,1).toString();
-             descripcion=tablaproducto.getValueAt(filaselect,2).toString();
-             cant=cantProduct.getText();
-             descuento=tablaproducto.getValueAt(filaselect,6).toString();
-             iva=tablaproducto.getValueAt(filaselect,3).toString();
+             m = (DefaultTableModel)tablaproducto.getModel();
+             codigo = tablaproducto.getValueAt(filaselect,0).toString();
+             precio = tablaproducto.getValueAt(filaselect,1).toString();
+             descripcion = tablaproducto.getValueAt(filaselect,2).toString();
+             cant = cantProduct.getText();
+             descuento = tablaproducto.getValueAt(filaselect,6).toString();
+             iva = tablaproducto.getValueAt(filaselect,3).toString();
          //operaciones
-             x=(Integer.parseInt(cant)*Double.parseDouble(precio));
-             descue=((Double.parseDouble(descuento)*x))/100;
-             ivas=(Double.parseDouble(iva)*(x))/100;
-             sub=(x-descue)+ivas;
-             importe=Double.toString(sub);               
-
-             m=(DefaultTableModel)tablafact.getModel();
-             String filaelemen[]={codigo, descripcion, precio,cant, iva, descuento,importe};
-             m.addRow(filaelemen);  
+             descue = ((Double.parseDouble(descuento))*Double.parseDouble(precio))/100;//200
+             ivas = ((((Double.parseDouble(iva)))/100)+1)*Double.parseDouble(precio); //2320
+             sub = (ivas-descue)*Double.parseDouble(cant);//(2320-200)*cant
+             importe = Double.toString(sub); 
+            
+             sindes=ivas*Double.parseDouble(cant);
+             total = total+sub;
+             subtotal = subtotal+sindes;
              
-             calcula=(Double.parseDouble(importe));
-             total=total+calcula;
-             
-             subtotal=subtotal+x;
              totalFactura.setText("$"+total);
              subtotalFactura.setText("$"+subtotal);
+             
+             m = (DefaultTableModel)tablafact.getModel();
+             String filaelemen[] = {codigo, descripcion, precio,cant, iva, descuento,importe};
+             m.addRow(filaelemen); 
              Insertar(codigo,cant);
            }
         }catch(Exception e ){
             }
     }
     
+    public void seleccionarPersona(){
+        apellidoFactura.setEditable(false);
+        nombreFactura.setEditable(false);
+        rfcFactura.setEditable(false);
+        direccionFactura.setEditable(false);
+        buscarIdFactura.setEditable(false);
+        
+         int filaselect=tablaper.getSelectedRow();
+     try{
+         if(filaselect==-1){
+            JOptionPane.showMessageDialog(null, "Seleccione a un cliente");
+         }else{
+            buscarIdFactura.setText(tablaper.getValueAt(filaselect,0).toString());
+            nombreFactura.setText(tablaper.getValueAt(filaselect,1).toString());
+            apellidoFactura.setText(tablaper.getValueAt(filaselect,2).toString());
+            rfcFactura.setText(tablaper.getValueAt(filaselect,5).toString());
+            direccionFactura.setText(tablaper.getValueAt(filaselect,7).toString());
+        }
+     }catch(Exception e){
+        
+    }
+    }
     public void tablaProducto(){
       try{        
            String titulos[]={"CODIGO", "PRECIO","DESCRIPCION","IVA%",
@@ -206,13 +198,58 @@ public class Factura extends javax.swing.JInternalFrame {
              c++;
             } 
            tablaproducto.setModel(m);
-        }
-   
-        catch (Exception e){
+        }catch (Exception e){
             JOptionPane.showMessageDialog(null, "Error");
         }  
     }
     
+    public void tablaPersona(){
+        try{
+        String titulos[]={"ID","NOMBRE", "APELLIDO MATERNO", "APELLIDO PATERNO", 
+            "RAZON SOCIAL", "RFC","REGIMEN FISCAL","CUIDAD", "CALLE", "COLONIA",
+             "# EXT"};
+            mtabla = new DefaultTableModel(null, titulos);
+            String fil[]=new String[17];
+           SQL= "SELECT * FROM PERSONA "
+                + "INNER JOIN PERSONA_DOMICILIO "
+                + "ON PERSONA_DOMICILIO.ID_PERSONA = PERSONA.ID_PERSONA "
+                + "INNER JOIN DOMICILIO "
+                + "ON PERSONA_DOMICILIO.ID_DOMICILIO = DOMICILIO.ID_DOMICILIO "
+                + "INNER JOIN PERSONA_TELEFONO "
+                + "ON PERSONA_TELEFONO.ID_PERSONA = PERSONA.ID_PERSONA "
+                + "INNER JOIN TELEFONO "
+                + "ON PERSONA_TELEFONO.ID_TELEFONO = TELEFONO.ID_TELEFONO "
+                + "INNER JOIN PERSONA_PAGINA "
+                + "ON PERSONA_PAGINA.ID_PERSONA = PERSONA.ID_PERSONA "
+                + "INNER JOIN PAGINA_WEB "
+                + "ON PERSONA_PAGINA.ID_PAGINA = PAGINA_WEB.ID_PAGINA "
+                + "INNER JOIN PERSONA_LOGOTIPO "
+                + "ON PERSONA_LOGOTIPO.ID_PERSONA = PERSONA.ID_PERSONA "
+                + "INNER JOIN LOGOTIPO "
+                + "ON PERSONA_LOGOTIPO.ID_LOGOTIPO = LOGOTIPO.ID_LOGOTIPO "
+                + "WHERE PERSONA.ID_PERSONA !=-1";
+           
+            r = con.generar(SQL);
+            while(r.next()){
+                fil[0]=r.getString(7);
+                fil[1]=r.getString("NOMBRE");
+                fil[2]=r.getString("APELLIDO_PATERNO");
+                fil[3]=r.getString("APELLIDO_MATERNO");
+                fil[4]=r.getString("RAZON_SOCIAL");
+                fil[5]=r.getString("RFC");
+                fil[6]=r.getString("REGIMEN_FISCAL");
+                fil[7]=r.getString("CIUDAD");
+                fil[8]=r.getString("COLONIA");
+                fil[9]=r.getString("CALLE");
+                fil[10]=r.getString("NUMERO_EXT");
+                
+             mtabla.addRow(fil);
+                 ci++;
+            }   
+           tablaper.setModel(mtabla);
+        }catch(Exception e){
+        }
+    }
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -224,6 +261,10 @@ public class Factura extends javax.swing.JInternalFrame {
         cantProduct = new javax.swing.JTextField();
         jButton5 = new javax.swing.JButton();
         jLabel7 = new javax.swing.JLabel();
+        jDialog2 = new javax.swing.JDialog();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        tablaper = new javax.swing.JTable();
+        jButton11 = new javax.swing.JButton();
         jPanel1 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         asf = new javax.swing.JLabel();
@@ -251,7 +292,7 @@ public class Factura extends javax.swing.JInternalFrame {
         jButton8 = new javax.swing.JButton();
         jButton9 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
-        jButton10 = new javax.swing.JButton();
+        Guardar = new javax.swing.JButton();
         totalFactura = new javax.swing.JTextField();
         jLabel15 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
@@ -335,6 +376,49 @@ public class Factura extends javax.swing.JInternalFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        tablaper.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {},
+                {},
+                {},
+                {}
+            },
+            new String [] {
+
+            }
+        ));
+        jScrollPane2.setViewportView(tablaper);
+
+        jButton11.setText("Agregar");
+        jButton11.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton11ActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jDialog2Layout = new javax.swing.GroupLayout(jDialog2.getContentPane());
+        jDialog2.getContentPane().setLayout(jDialog2Layout);
+        jDialog2Layout.setHorizontalGroup(
+            jDialog2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jDialog2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 669, Short.MAX_VALUE)
+                .addContainerGap())
+            .addGroup(jDialog2Layout.createSequentialGroup()
+                .addGap(301, 301, 301)
+                .addComponent(jButton11)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        jDialog2Layout.setVerticalGroup(
+            jDialog2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jDialog2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 171, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(26, 26, 26)
+                .addComponent(jButton11)
+                .addContainerGap(69, Short.MAX_VALUE))
+        );
+
         setPreferredSize(new java.awt.Dimension(950, 550));
 
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Datos Generales"));
@@ -374,7 +458,13 @@ public class Factura extends javax.swing.JInternalFrame {
             }
         });
 
-        jLabel11.setText("Direccion:");
+        jLabel11.setText("Cuidad:");
+
+        direccionFactura.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                direccionFacturaActionPerformed(evt);
+            }
+        });
 
         jLabel12.setText("Fecha:");
 
@@ -525,11 +615,11 @@ public class Factura extends javax.swing.JInternalFrame {
             }
         });
 
-        jButton10.setIcon(new javax.swing.ImageIcon(getClass().getResource("/miPaquete/Download-icon.png"))); // NOI18N
-        jButton10.setText("Guardar");
-        jButton10.addActionListener(new java.awt.event.ActionListener() {
+        Guardar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/miPaquete/Download-icon.png"))); // NOI18N
+        Guardar.setText("Guardar");
+        Guardar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton10ActionPerformed(evt);
+                GuardarActionPerformed(evt);
             }
         });
 
@@ -569,7 +659,7 @@ public class Factura extends javax.swing.JInternalFrame {
                                 .addGap(18, 18, 18)
                                 .addComponent(totalFactura, javax.swing.GroupLayout.PREFERRED_SIZE, 153, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(33, 33, 33)
-                                .addComponent(jButton10, javax.swing.GroupLayout.PREFERRED_SIZE, 151, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(Guardar, javax.swing.GroupLayout.PREFERRED_SIZE, 151, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 725, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
@@ -601,7 +691,7 @@ public class Factura extends javax.swing.JInternalFrame {
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 134, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jButton10, javax.swing.GroupLayout.DEFAULT_SIZE, 63, Short.MAX_VALUE)
+                            .addComponent(Guardar, javax.swing.GroupLayout.DEFAULT_SIZE, 63, Short.MAX_VALUE)
                             .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(jLabel3)
@@ -721,7 +811,6 @@ public class Factura extends javax.swing.JInternalFrame {
 
     private void nombreFacturaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nombreFacturaActionPerformed
         // TODO add your handling code here:
-        // TODO add your handling code here:
     }//GEN-LAST:event_nombreFacturaActionPerformed
 
     private void apellidoFacturaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_apellidoFacturaActionPerformed
@@ -733,10 +822,11 @@ public class Factura extends javax.swing.JInternalFrame {
     }//GEN-LAST:event_buscarIdFacturaActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-       buscarUsuario();
+       jDialog2.setSize(900, 300);
+       jDialog2.setVisible(true);
+       tablaPersona();
     }//GEN-LAST:event_jButton1ActionPerformed
 
-    @SuppressWarnings("empty-statement")
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
     limpiar();
      totalFactura.setText("");
@@ -746,49 +836,45 @@ public class Factura extends javax.swing.JInternalFrame {
             for (int i = 0;filas>i; i++) {
                 modelo.removeRow(0);
             }
+       jPanel1.setVisible(false);      
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton8ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton8ActionPerformed
      jDialog1.setSize(800,300);
      jDialog1.setVisible(true);
      tablaProducto();
-     
-     
     }//GEN-LAST:event_jButton8ActionPerformed
 
     private void jButton9ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton9ActionPerformed
-     
-        try{
-            int fsel=tablafact.getSelectedRow();
-        
-     System.out.println(fsel);
-     if(fsel==-1){
-         JOptionPane.showConfirmDialog(null, "Seleccione producto a eliminar");
-     }else{
-          descuento=tablaproducto.getValueAt(fsel,6).toString();
-          iva=tablaproducto.getValueAt(fsel,3).toString();
-           String calcul=tablafact.getValueAt(fsel,6).toString();
-           String pre=tablafact.getValueAt(fsel,2).toString();
-           System.out.println("descuento="+descuento+"calcula="+calcul+"iva:"+iva);
-           System.out.println("total:"+total); 
+     try{
+          int fsel=tablafact.getSelectedRow();
+        if(fsel==-1){
+            JOptionPane.showConfirmDialog(null, "Seleccione producto a eliminar");
+        }else{
+            cant=tablafact.getValueAt(fsel,3).toString();
+            iva = tablafact.getValueAt(fsel,4).toString();
+            precio = tablafact.getValueAt(fsel,2).toString();
+            String calcul=tablafact.getValueAt(fsel,6).toString();
            
-             descue=((Double.parseDouble(calcul)*Double.parseDouble(descuento))/100);
-             ivas=(Double.parseDouble(iva)*(Double.parseDouble(calcul))/100);
-             sub=subtotal-Double.parseDouble(pre);
-             sub1=total-((Double.parseDouble(precio)-descue)+ivas);
+            ivas= (((((Double.parseDouble(iva)))/100)+1)*Double.parseDouble(precio))*Double.parseDouble(cant);
+            totala=total-Double.parseDouble(calcul); //4240-2120=2120
+            sub=subtotal-ivas;                     //precio+iva2320
             
-             System.out.println("descue:"+descue+"ivas:"+ivas);
-             System.out.println("sub:"+sub+"total:"+sub1);
-           
-             totalFactura.setText("$"+sub1);
-             subtotalFactura.setText("$"+sub);
-             
-             m=(DefaultTableModel)tablafact.getModel();
-             m.removeRow(fsel);
-         System.out.println("lelele");
-     }
-    }
-    catch(Exception e){
+            totalFactura.setText("$"+totala);
+            subtotalFactura.setText("$"+sub);
+        
+            m=(DefaultTableModel)tablafact.getModel();
+            m.removeRow(fsel);
+            System.out.println(tablafact.getRowCount());
+       
+              if(this.tablafact.getRowCount()==0 ){
+                 totalFactura.setText("");
+                 subtotalFactura.setText("");
+                 calcula=0; subtotal=0;
+                }
+           }
+       }
+     catch(Exception e){
          System.out.println("jskjsdf");
     }
     }//GEN-LAST:event_jButton9ActionPerformed
@@ -809,8 +895,9 @@ public class Factura extends javax.swing.JInternalFrame {
     }//GEN-LAST:event_jButton7ActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-      jPanel1.setVisible(false);
-       buscarFolio();
+        FacturaConsulta f = new FacturaConsulta();
+        f.GenerarTabla();
+        //f.setVisible(true);
     }//GEN-LAST:event_jButton3ActionPerformed
 
     private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
@@ -822,14 +909,22 @@ public class Factura extends javax.swing.JInternalFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_nofacturaActionPerformed
 
-    private void jButton10ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton10ActionPerformed
-       ///LLENA EL LA TABLAFORMADE PAGO
-       
-     flag=0;
-    }//GEN-LAST:event_jButton10ActionPerformed
+    private void GuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GuardarActionPerformed
+   JOptionPane.showMessageDialog(null, "Factura Generada..!!");
+    }//GEN-LAST:event_GuardarActionPerformed
+
+    private void direccionFacturaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_direccionFacturaActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_direccionFacturaActionPerformed
+
+    private void jButton11ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton11ActionPerformed
+        jDialog2.setVisible(false);
+        seleccionarPersona();
+    }//GEN-LAST:event_jButton11ActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton Guardar;
     private javax.swing.JTextField apellidoFactura;
     private javax.swing.JLabel asf;
     private javax.swing.JTextField buscarIdFactura;
@@ -838,7 +933,7 @@ public class Factura extends javax.swing.JInternalFrame {
     public javax.swing.JTextField fechaFact;
     private javax.swing.JComboBox formapagoFact;
     private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton10;
+    private javax.swing.JButton jButton11;
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
     private javax.swing.JButton jButton4;
@@ -848,6 +943,7 @@ public class Factura extends javax.swing.JInternalFrame {
     private javax.swing.JButton jButton8;
     private javax.swing.JButton jButton9;
     private javax.swing.JDialog jDialog1;
+    private javax.swing.JDialog jDialog2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
@@ -869,6 +965,7 @@ public class Factura extends javax.swing.JInternalFrame {
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     public javax.swing.JTextField nofactura;
     private javax.swing.JTextField nombreFactura;
@@ -876,6 +973,7 @@ public class Factura extends javax.swing.JInternalFrame {
     private javax.swing.JLabel sd;
     private javax.swing.JTextField subtotalFactura;
     public javax.swing.JTable tablafact;
+    private javax.swing.JTable tablaper;
     public javax.swing.JTable tablaproducto;
     private javax.swing.JTextField totalFactura;
     // End of variables declaration//GEN-END:variables
