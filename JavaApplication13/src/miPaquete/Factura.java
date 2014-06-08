@@ -11,6 +11,7 @@ import java.awt.print.PrinterException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.DecimalFormat;
 import java.text.MessageFormat;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -21,12 +22,14 @@ import javax.swing.table.DefaultTableModel;
 
 public class Factura extends javax.swing.JInternalFrame {
     Conexiones con = new Conexiones();  
+     DecimalFormat df = new DecimalFormat("0.00");
     ResultSet r;
     DefaultTableModel m, mtabla;
     String SQL, fila[]=new String[17],s, importe,
            codigo, cant,precio, iva, descripcion,descuento;
     int c=1, ci=1, idBuscar, band=1,idpago,canti=0, flag=0;
-    double calcula=0, x=0, total, descue, ivas, subtotal, sub, totala, sindes;
+    double calcula=0.0, x=0.0, total=0.0, descue=0.0, ivas=0.0, subtotal=0.0, 
+            sub=0.0, totala=0.0, sindes=0.0;
 
     public Factura() {
         initComponents();
@@ -119,9 +122,10 @@ public class Factura extends javax.swing.JInternalFrame {
      try{
          if(filaselect==-1){
             JOptionPane.showMessageDialog(null, "Seleccione un producto");
-            calcula=0; subtotal=0;
+            calcula=0.0; subtotal=0.0;
          }else{
              m = (DefaultTableModel)tablaproducto.getModel();
+             
              codigo = tablaproducto.getValueAt(filaselect,0).toString();
              precio = tablaproducto.getValueAt(filaselect,1).toString();
              descripcion = tablaproducto.getValueAt(filaselect,2).toString();
@@ -131,21 +135,37 @@ public class Factura extends javax.swing.JInternalFrame {
          //operaciones
              descue = ((Double.parseDouble(descuento))*Double.parseDouble(precio))/100;//200
              ivas = ((((Double.parseDouble(iva)))/100)+1)*Double.parseDouble(precio); //2320
-             sub = (ivas-descue)*Double.parseDouble(cant);//(2320-200)*cant
-             importe = Double.toString(sub); 
-            
+             (sub)= ((ivas-descue)*Double.parseDouble(cant));//(2320-200)*cant
+             importe = Double.toString(sub);///cadena
+             int pos = importe.indexOf("."); 
+             
+             importe=(importe.substring(0,pos+3));
              sindes=ivas*Double.parseDouble(cant);
              total = total+sub;
              subtotal = subtotal+sindes;
+          
+             totalFactura.setText("$"+df.format(total));
+             subtotalFactura.setText("$"+df.format(subtotal));
              
-             totalFactura.setText("$"+total);
-             subtotalFactura.setText("$"+subtotal);
              
              m = (DefaultTableModel)tablafact.getModel();
              String filaelemen[] = {codigo, descripcion, precio,cant, iva, descuento,importe};
              m.addRow(filaelemen); 
              Insertar(codigo,cant);
+             
+            /* for (int i=0; i<importe.length(); i++){
+                 System.out.println(importe.length());
+             if(importe.charAt(i)=='.') {
+                 int impor = Integer.parseInt(importe.substring(i+2));
+                 System.out.println(impor);
+                 } 
+                 else {
+                 }{
+                
+            }
+            }*/ 
            }
+          
         }catch(Exception e ){
             }
     }
@@ -855,14 +875,21 @@ public class Factura extends javax.swing.JInternalFrame {
             iva = tablafact.getValueAt(fsel,4).toString();
             precio = tablafact.getValueAt(fsel,2).toString();
             String calcul=tablafact.getValueAt(fsel,6).toString();
-           
-            ivas= (((((Double.parseDouble(iva)))/100)+1)*Double.parseDouble(precio))*Double.parseDouble(cant);
-            totala=total-Double.parseDouble(calcul); //4240-2120=2120
-            sub=subtotal-ivas;                     //precio+iva2320
             
-            totalFactura.setText("$"+totala);
-            subtotalFactura.setText("$"+sub);
-        
+           
+            
+            ivas= (((((Double.parseDouble(iva)))/100)+1)*Double.parseDouble(precio))*Double.parseDouble(cant);
+            total=total-Double.parseDouble(calcul); //4240-2120=2120
+            subtotal=subtotal-ivas;                     //precio+iva2320
+            
+            totalFactura.setText("$"+df.format(total));
+            subtotalFactura.setText("$"+df.format(subtotal));
+            
+            System.out.println("\n total:"+totalFactura+"\n subtotal:"+subtotalFactura);
+            System.out.println("\n cant:"+cant+"\n iva:"+iva+""
+                    + "\n precio:"+precio+"\n importe"+calcul);
+            System.out.println("\n ivas:"+ivas+"\n totala:"+totala+""
+                    + "\n sub:"+sub);
             m=(DefaultTableModel)tablafact.getModel();
             m.removeRow(fsel);
             System.out.println(tablafact.getRowCount());
@@ -870,7 +897,8 @@ public class Factura extends javax.swing.JInternalFrame {
               if(this.tablafact.getRowCount()==0 ){
                  totalFactura.setText("");
                  subtotalFactura.setText("");
-                 calcula=0; subtotal=0;
+                 calcula=0.0; subtotal=0.0;
+                 sub=0.0; sindes=0.0;total=0.0;
                 }
            }
        }
@@ -910,7 +938,21 @@ public class Factura extends javax.swing.JInternalFrame {
     }//GEN-LAST:event_nofacturaActionPerformed
 
     private void GuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GuardarActionPerformed
-   JOptionPane.showMessageDialog(null, "Factura Generada..!!");
+  if(          nofactura.getText().equals("") || 
+               nombreFactura.getText().equals("") ||
+               rfcFactura.getText().equals("") ||
+               apellidoFactura.getText().equals("") ||
+               direccionFactura.getText().equals("") ||
+               fechaFact.getText().equals("") ||
+               buscarIdFactura.getText().equals("") ||
+               totalFactura.getText().equals("") ||
+               subtotalFactura.getText().equals(""))
+        {
+        JOptionPane.showMessageDialog(null, "FALTAN DATOS..!!!");
+        }else{
+       JOptionPane.showMessageDialog(null, "Factura Generada..!!");
+     }
+       
     }//GEN-LAST:event_GuardarActionPerformed
 
     private void direccionFacturaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_direccionFacturaActionPerformed

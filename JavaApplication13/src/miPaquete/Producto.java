@@ -6,6 +6,7 @@
 
 package miPaquete;
 
+import java.awt.event.KeyEvent;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -245,6 +246,11 @@ Conexiones con = new Conexiones();
             }
         });
 
+        precioProducto.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                precioProductoActionPerformed(evt);
+            }
+        });
         precioProducto.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent evt) {
                 precioProductoKeyTyped(evt);
@@ -672,14 +678,21 @@ public void GenerarTabla() {
 
     private void precioProductoKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_precioProductoKeyTyped
         char c = evt.getKeyChar();
-        if(c < '0' || c > '9'){
+        if((c < '0' || c > '9')  && (c != KeyEvent.VK_BACK_SPACE)
+                                && (c !='.')){
             evt.consume();
         }
+        int pos = precioProducto.getText().indexOf("."); 
+        
+        if(pos!=-1){ 
+        if(pos+3==precioProducto.getText().length()){
+              evt.consume();
+          }
         int tamaño = precioProducto.getText().length();
             if(tamaño == 5)
                 descripcionProducto.requestFocus();
     }//GEN-LAST:event_precioProductoKeyTyped
-
+    }
     private void ivaProductoKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_ivaProductoKeyTyped
         char c = evt.getKeyChar();
         if(c < '0' || c > '9'){
@@ -733,6 +746,10 @@ public void GenerarTabla() {
             cantidadProducto.requestFocus();
         }
     }//GEN-LAST:event_finProductoKeyTyped
+
+    private void precioProductoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_precioProductoActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_precioProductoActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
